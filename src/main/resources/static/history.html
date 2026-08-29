@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Watch history - Raunak Dummy YouTube</title>
+
+    <link rel="stylesheet" href="history_style.css">
+
+    <link rel="icon" type="image/png"
+        href="https://www.freepnglogos.com/uploads/youtube-logo-png/youtube-transparent-youtube-icon-download-clipart-with-transparent-25.png">
+</head>
+
+<body>
+
+    <!-- ================= HEADER ================= -->
+
+    <header>
+
+        <div class="left">
+
+            <button id="menuBtn">☰</button>
+
+            <div class="logo" style="color: red;">
+                <span class="play">▶</span>
+                R YouTube<sup>IN</sup>
+            </div>
+
+        </div>
+
+
+        <!-- Search -->
+
+        <div class="search-container">
+
+            <div class="search-box">
+
+                <input type="text" id="searchInput" placeholder="Search videos...">
+
+                <button id="searchBtn">🔍</button>
+
+            </div>
+
+            <button id="voiceBtn" title="Voice Search">
+                🎤
+            </button>
+
+        </div>
+
+
+        <!-- Header Right -->
+
+        <div class="header-right">
+
+            <button class="create-btn" id="createBtn">
+                ＋ Create
+            </button>
+
+            <button class="icon-btn">
+                🔔
+                <span class="badge">1</span>
+            </button>
+
+            <img class="avatar" id="profileBtn"
+                src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj"
+                alt="Profile">
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main>
+
+        <!-- ================= SIDEBAR ================= -->
+
+        <aside id="sidebar">
+
+            <ul class="channel-list">
+
+                <li>
+                    <img src="https://i.pravatar.cc/40?img=12" alt="">
+                    Parbrahm Singh
+                    <span class="sub-dot">●</span>
+                </li>
+
+                <li>
+                    <img src="https://i.pravatar.cc/40?img=13" alt="">
+                    Goldmines
+                    <span class="sub-dot">●</span>
+                </li>
+
+                <li>
+                    <img src="https://i.pravatar.cc/40?img=14" alt="">
+                    PlayMovies
+                    <span class="sub-dot">●</span>
+                </li>
+
+                <li>
+                    <img src="https://i.pravatar.cc/40?img=15" alt="">
+                    Nomad Suman
+                </li>
+
+                <li>
+                    <img src="https://i.pravatar.cc/40?img=16" alt="">
+                    Aaj Ke Balaji Bha...
+                    <span class="live-dot">🔴</span>
+                </li>
+
+                <li>
+                    <img src="https://i.pravatar.cc/40?img=17" alt="">
+                    Masala Reacts
+                    <span class="sub-dot">●</span>
+                </li>
+
+            </ul>
+
+
+            <div class="show-more">
+                ⌄ Show more
+            </div>
+
+
+            <hr class="sidebar-rule">
+
+
+            <div class="section-label">
+                You <span>›</span>
+            </div>
+
+
+            <ul class="you-list">
+
+                <li onclick="location.href='channel.html'">
+                    <span class="ico">👤</span>
+                    Your channel
+                </li>
+
+                <li class="active">
+                    <span class="ico">🕘</span>
+                    History
+                </li>
+
+                <li>
+                    <span class="ico">▤</span>
+                    Playlists
+                </li>
+
+                <li>
+                    <span class="ico">🕒</span>
+                    Watch Later
+                </li>
+
+                <li onclick="location.href='likedvideos.html'">
+                    <span class="ico">👍</span>
+                    Liked videos
+                </li>
+
+            </ul>
+
+        </aside>
+
+
+        <!-- ================= HISTORY CONTENT ================= -->
+
+        <div id="history-content">
+
+            <div class="history-main">
+
+                <h1>Watch history</h1>
+
+
+                <!-- FILTERS -->
+
+                <div class="filter-chips" id="filterChips">
+
+                    <button class="chip active" data-filter="all">
+                        All
+                    </button>
+
+                    <button class="chip" data-filter="videos">
+                        Videos
+                    </button>
+
+                    <button class="chip" data-filter="shorts">
+                        Shorts
+                    </button>
+
+                    <button class="chip" data-filter="podcasts">
+                        Podcasts
+                    </button>
+
+                    <button class="chip" data-filter="music">
+                        Music
+                    </button>
+
+                </div>
+
+
+                <!-- HISTORY LIST -->
+
+                <div id="historyList">
+
+                    <!-- JavaScript will load history here -->
+
+                </div>
+
+
+                <!-- EMPTY STATE -->
+
+                <p class="empty-state" id="emptyState" style="display:none;">
+
+                    Videos you watch will appear here.
+
+                </p>
+
+            </div>
+
+
+            <!-- ================= RIGHT SIDE ================= -->
+
+            <div class="history-side">
+
+
+                <!-- History Search -->
+
+                <div class="side-search">
+
+                    <input type="text" id="historySearch" placeholder="Search watch history">
+
+                    <span class="search-ico">
+                        🔍
+                    </span>
+
+                </div>
+
+
+                <!-- Clear History -->
+
+                <div class="side-action" id="clearAllBtn">
+
+                    <span class="ico">
+                        🗑
+                    </span>
+
+                    Clear all watch history
+
+                </div>
+
+
+                <!-- Pause -->
+
+                <div class="side-action" id="pauseBtn">
+
+                    <span class="ico">
+                        ⏸
+                    </span>
+
+                    <span id="pauseLabel">
+                        Pause watch history
+                    </span>
+
+                </div>
+
+
+                <!-- Manage -->
+
+                <div class="side-action" id="manageBtn">
+
+                    <span class="ico">
+                        ⚙
+                    </span>
+
+                    Manage all history
+
+                </div>
+
+
+                <div class="side-sub">
+
+                    <a href="#">
+                        Comments
+                    </a>
+
+                    <a href="#">
+                        Posts
+                    </a>
+
+                    <a href="#">
+                        Live chat
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        <p>
+            &copy; 2026 RTube.
+            This is a dummy webpage created for learning purposes.
+        </p>
+
+    </footer>
+
+
+    <!-- HISTORY JAVASCRIPT -->
+
+    <script src="history.js"></script>
+
+</body>
+
+</html>
