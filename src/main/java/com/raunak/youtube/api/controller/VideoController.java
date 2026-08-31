@@ -82,4 +82,22 @@ public class VideoController {
 
         return videoService.getLikedVideos();
     }
+
+    // =====================================================
+    // GET VIDEO BY ID API
+    // =====================================================
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Video> getVideoById(
+            @PathVariable int id) {
+
+        Video video = videoService.getVideoById(id);
+
+        if (video == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(video);
+    }
+
 }
