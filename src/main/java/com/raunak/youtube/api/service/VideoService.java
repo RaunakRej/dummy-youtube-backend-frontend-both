@@ -334,4 +334,20 @@ public class VideoService {
                                 .filter(Video::isLiked)
                                 .collect(Collectors.toList());
         }
+
+        // =====================================================
+        // GET VIDEO BY ID
+        // =====================================================
+
+        public Video getVideoById(int id) {
+
+                for (Video video : videos) {
+
+                        if (video.getId() == id) {
+                                return video;
+                        }
+                }
+
+                return null;
+        }
 }
