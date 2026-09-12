@@ -1,178 +1,120 @@
 // =====================================================
-// VIDEO DATA FROM SPRING BOOT API
+// RTube - YouTube JavaScript
+// =====================================================
+
+console.log("RTube frontend loaded.");
+
+// =====================================================
+// API CONFIGURATION
+// =====================================================
+
+const API_URL = "/api/videos";
+const SEARCH_API_URL = "/api/videos/search";
+
+// =====================================================
+// GLOBAL VARIABLES
 // =====================================================
 
 let videos = [];
-
-const API_URL = "/api/videos";
-// Search API
-const SEARCH_API_URL = "/api/videos/search";
 
 // =====================================================
 // LOCAL STORAGE KEYS
 // =====================================================
 
 const LIKED_VIDEOS_KEY = "likedVideoIds";
-
-// =====================================================
-// WATCH HISTORY STORAGE
-// =====================================================
-
 const WATCH_HISTORY_KEY = "watchHistory";
+const WATCH_HISTORY_PAUSED_KEY = "watchHistoryPaused";
 
 // =====================================================
-// GET WATCH HISTORY
+// DOM ELEMENTS
+// =====================================================
+
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const spinner = document.getElementById("spinner");
+const clearBtn = document.getElementById("clearBtn");
+
+// =====================================================
+// WATCH HISTORY
 // =====================================================
 
 function getWatchHistory() {
   try {
-    const history = JSON.parse(localStorage.getItem(WATCH_HISTORY_KEY) || "[]");
-
-    return Array.isArray(history) ? history : [];
+    return JSON.parse(localStorage.getItem(WATCH_HISTORY_KEY)) || [];
   } catch (error) {
     console.error("Error reading watch history:", error);
-
     return [];
   }
 }
 
-// =====================================================
-// SAVE WATCH HISTORY
-// =====================================================
-
 function saveWatchHistory(history) {
-  localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
+  try {
+    localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
+  } catch (error) {
+    console.error("Error saving watch history:", error);
+  }
 }
 
-// =====================================================
-// ADD VIDEO TO WATCH HISTORY
-// =====================================================
-
-function addToWatchHistory(video) {
-  // ---------------------------------------------------
-  // DO NOT ADD HISTORY WHEN HISTORY IS PAUSED
-  // ---------------------------------------------------
-
-  const historyPaused = localStorage.getItem("watchHistoryPaused") === "true";
-
-  if (historyPaused) {
+function addToWatchHistory(videoId) {
+  if (localStorage.getItem(WATCH_HISTORY_PAUSED_KEY) === "true") {
     console.log("Watch history is paused.");
-
-    return;
-  }
-
-  // ---------------------------------------------------
-  // Validate video
-  // ---------------------------------------------------
-
-  if (!video || !video.id) {
-    console.warn("Cannot add invalid video to history.");
-
     return;
   }
 
   let history = getWatchHistory();
 
-  const videoId = String(video.id);
+  videoId = String(videoId);
 
-  // ---------------------------------------------------
   // Remove duplicate
-  // ---------------------------------------------------
+  history = history.filter((id) => String(id) !== videoId);
 
-  history = history.filter(function (item) {
-    // Support old ID-only format
-    if (typeof item === "string" || typeof item === "number") {
-      return String(item) !== videoId;
-    }
+  // Add newest video at beginning
+  history.unshift(videoId);
 
-    // New object format
-    return String(item.id) !== videoId;
-  });
-
-  // ---------------------------------------------------
-  // Create history object
-  // ---------------------------------------------------
-
-  const historyItem = {
-    id: video.id,
-
-    title: video.title || "Untitled Video",
-
-    channel: video.channel || "Unknown Channel",
-
-    views: video.views || "0 views",
-
-    uploaded: video.uploaded || "",
-
-    duration: video.duration || "",
-
-    thumbnail: video.thumbnail || "",
-
-    category: video.category || "recommended",
-
-    videoUrl: video.videoUrl || video.url || "",
-
-    watchedAt: new Date().toISOString(),
-  };
-
-  // ---------------------------------------------------
-  // Add to beginning
-  // ---------------------------------------------------
-
-  history.unshift(historyItem);
-
-  // ---------------------------------------------------
-  // Maximum history size
-  // ---------------------------------------------------
-
-  const MAX_HISTORY_ITEMS = 100;
-
-  if (history.length > MAX_HISTORY_ITEMS) {
-    history = history.slice(0, MAX_HISTORY_ITEMS);
-  }
-
-  // ---------------------------------------------------
-  // Save
-  // ---------------------------------------------------
+  // Maximum 100 history records
+  history = history.slice(0, 100);
 
   saveWatchHistory(history);
 
-  console.log("Video added to watch history:", historyItem);
+  console.log("Watch history updated:", history);
 }
+
 // =====================================================
-// LIKED VIDEOS STORAGE
+// LIKED VIDEOS
 // =====================================================
 
 function getLikedVideoIds() {
   try {
-    return JSON.parse(localStorage.getItem(LIKED_VIDEOS_KEY) || "[]");
+    return JSON.parse(localStorage.getItem(LIKED_VIDEOS_KEY)) || [];
   } catch (error) {
     console.error("Error reading liked videos:", error);
+
     return [];
   }
 }
 
 function saveLikedVideoIds(ids) {
-  localStorage.setItem(LIKED_VIDEOS_KEY, JSON.stringify(ids));
+  try {
+    localStorage.setItem(LIKED_VIDEOS_KEY, JSON.stringify(ids));
+  } catch (error) {
+    console.error("Error saving liked videos:", error);
+  }
 }
-
-// =====================================================
-// UPDATE LIKED VIDEOS COUNT
-// =====================================================
 
 function updateLikedVideosCount() {
   const likedVideoIds = getLikedVideoIds();
-
   const count = likedVideoIds.length;
 
   const countElements = [
-    document.getElementById("likedVideosCount"),
-    document.getElementById("likedVideoCount"),
-    document.getElementById("liked-count"),
-    document.getElementById("likedCount"),
+    "likedVideosCount",
+    "likedVideoCount",
+    "liked-count",
+    "likedCount",
   ];
 
-  countElements.forEach(function (element) {
+  countElements.forEach((id) => {
+    const element = document.getElementById(id);
+
     if (element) {
       element.textContent = count;
     }
@@ -182,68 +124,52 @@ function updateLikedVideosCount() {
 }
 
 // =====================================================
-// WATCH HISTORY STORAGE
+// GET VIDEO BY ID
 // =====================================================
 
-// =====================================================
-// GET VIDEO FROM CURRENT VIDEO ARRAY
-// =====================================================
-
-function getVideoById(videoId) {
-  return videos.find(function (video) {
-    return String(video.id) === String(videoId);
-  });
+function getVideoById(id) {
+  return videos.find((video) => String(video.id) === String(id));
 }
-
-// =====================================================
-// COMMON DOM ELEMENTS
-// =====================================================
-
-const searchInput = document.getElementById("searchInput");
-
-const searchBtn = document.getElementById("searchBtn");
-
-const spinner = document.getElementById("spinner");
-
-const clearBtn = document.getElementById("clearBtn");
 
 // =====================================================
 // LOAD VIDEOS FROM SPRING BOOT API
 // =====================================================
 
 async function loadVideosFromAPI() {
+  console.log("Fetching videos from Spring Boot API...");
+
+  if (spinner) {
+    spinner.style.display = "block";
+  }
+
   try {
-    console.log("Fetching videos from Spring Boot API...");
-
-    if (spinner) {
-      spinner.style.display = "flex";
-    }
-
     const response = await fetch(API_URL);
 
+    console.log("API response status:", response.status);
+
     if (!response.ok) {
-      throw new Error("API request failed. Status: " + response.status);
+      throw new Error(`API request failed: ${response.status}`);
     }
 
     const data = await response.json();
 
     console.log("Videos received from API:", data);
 
+    if (!Array.isArray(data)) {
+      throw new Error("API response is not an array.");
+    }
+
     videos = data;
 
     // =================================================
-    // RESTORE LIKED STATUS FROM LOCAL STORAGE
+    // RESTORE LIKE STATUS
     // =================================================
 
     const likedVideoIds = getLikedVideoIds();
 
-    videos.forEach(function (video) {
+    videos.forEach((video) => {
       video.liked = likedVideoIds.includes(String(video.id));
     });
-
-    // =================================================
-    // UPDATE LIKED COUNT
-    // =================================================
 
     updateLikedVideosCount();
 
@@ -251,11 +177,13 @@ async function loadVideosFromAPI() {
     // RENDER VIDEOS
     // =================================================
 
+    console.log("Calling renderVideos()...");
+
     renderVideos();
   } catch (error) {
-    console.error("Error loading videos from API:", error);
+    console.error("Error loading videos:", error);
 
-    showAPIError();
+    showAPIError("Unable to load videos from server.");
   } finally {
     if (spinner) {
       spinner.style.display = "none";
@@ -264,38 +192,31 @@ async function loadVideosFromAPI() {
 }
 
 // =====================================================
-// API ERROR MESSAGE
+// API ERROR
 // =====================================================
 
-function showAPIError() {
+function showAPIError(message) {
+  console.error(message);
+
   const containers = [
     document.getElementById("recommendedVideos"),
-
     document.getElementById("trendingVideos"),
-
     document.getElementById("musicVideos"),
-
     document.getElementById("movieVideos"),
   ];
 
-  containers.forEach(function (container) {
+  containers.forEach((container) => {
     if (container) {
       container.innerHTML = `
-
-        <div class="no-results">
-
-          <h3>
-            Unable to load videos
-          </h3>
-
-          <p>
-            Please make sure the Spring Boot API
-            is running on port 8080.
-          </p>
-
-        </div>
-
-      `;
+                <div style="
+                    padding:20px;
+                    text-align:center;
+                    color:#ff4444;
+                    font-size:16px;
+                ">
+                    ${message}
+                </div>
+            `;
     }
   });
 }
@@ -307,173 +228,88 @@ function showAPIError() {
 function createVideoCard(video) {
   const isLiked = video.liked === true;
 
+  // ---------------------------------------------
+  // Thumbnail
+  // ---------------------------------------------
+
+  const fallbackThumbnail = "https://via.placeholder.com/300x170?text=RTube";
+
+  const thumbnail =
+    video.thumbnail && String(video.thumbnail).trim() !== ""
+      ? video.thumbnail
+      : fallbackThumbnail;
+
+  // ---------------------------------------------
+  // Category
+  // ---------------------------------------------
+
+  const category = video.category || "Recommended";
+
+  // ---------------------------------------------
+  // Create HTML
+  // ---------------------------------------------
+
   return `
+        <div class="video-card">
 
-    <div class="video-card">
+            <article
+                data-id="${video.id}"
+                class="video-article"
+            >
 
-      <article data-id="${video.id}">
+                <div class="thumbnail-container">
 
-        <div class="thumbnail-container">
+                    <img
+                        src="${thumbnail}"
+                        alt="${video.title || "Video"}"
+                        loading="lazy"
+                        onerror="
+                            if (this.src !== '${fallbackThumbnail}') {
+                                this.src='${fallbackThumbnail}';
+                            }
+                        "
+                    >
 
-          <img
-            src="${video.thumbnail || ""}"
-            alt="${video.title || "Video"}"
-            loading="lazy"
-          >
+                    <span class="dur">
+                        ${video.duration || ""}
+                    </span>
 
-          <span class="dur">
-            ${video.duration || ""}
-          </span>
+                </div>
+
+                <div class="video-info">
+
+                    <h3>
+                        ${video.title || "Untitled Video"}
+                    </h3>
+
+                    <p>
+                        ${video.channel || "Unknown Channel"}
+                    </p>
+
+                    <p>
+                        ${video.views || "0 views"}
+                        •
+                        ${video.uploaded || ""}
+                    </p>
+
+                    <p class="video-category">
+                        ${category}
+                    </p>
+
+                    <button
+                        class="like-btn ${isLiked ? "liked" : ""}"
+                        data-id="${video.id}"
+                        type="button"
+                    >
+                        ${isLiked ? "♥ Liked" : "♡ Like"}
+                    </button>
+
+                </div>
+
+            </article>
 
         </div>
-
-        <div class="video-info">
-
-          <h3>
-            ${video.title || "Untitled Video"}
-          </h3>
-
-          <p>
-            ${video.channel || "Unknown Channel"}
-          </p>
-
-          <p>
-            ${video.views || "0 views"} •
-            ${video.uploaded || ""}
-          </p>
-
-          <button
-            class="like-btn ${isLiked ? "liked" : ""}"
-            data-id="${video.id}"
-            type="button"
-          >
-            ${isLiked ? "♥ Liked" : "♡ Like"}
-          </button>
-
-        </div>
-
-      </article>
-
-    </div>
-
-  `;
-}
-
-// =====================================================
-// LIKE / UNLIKE VIDEO API
-// =====================================================
-
-async function toggleLikeVideo(videoId, likeButton) {
-  const isCurrentlyLiked = likeButton.classList.contains("liked");
-
-  try {
-    likeButton.disabled = true;
-
-    let response;
-
-    // =================================================
-    // UNLIKE
-    // =================================================
-
-    if (isCurrentlyLiked) {
-      response = await fetch(`${API_URL}/${videoId}/like`, {
-        method: "DELETE",
-      });
-    }
-
-    // =================================================
-    // LIKE
-    // =================================================
-    else {
-      response = await fetch(`${API_URL}/${videoId}/like`, {
-        method: "POST",
-      });
-    }
-
-    // =================================================
-    // CHECK RESPONSE
-    // =================================================
-
-    if (!response.ok) {
-      throw new Error("Like API failed. Status: " + response.status);
-    }
-
-    // =================================================
-    // READ RESPONSE
-    // =================================================
-
-    let updatedVideo = null;
-
-    const contentType = response.headers.get("content-type");
-
-    if (contentType && contentType.includes("application/json")) {
-      updatedVideo = await response.json();
-    }
-
-    console.log("Like API response:", updatedVideo);
-
-    // =================================================
-    // NEW LIKE STATUS
-    // =================================================
-
-    const newLikeStatus = !isCurrentlyLiked;
-
-    // =================================================
-    // UPDATE VIDEO ARRAY
-    // =================================================
-
-    const videoIndex = videos.findIndex(function (video) {
-      return String(video.id) === String(videoId);
-    });
-
-    if (videoIndex !== -1) {
-      videos[videoIndex].liked = newLikeStatus;
-    }
-
-    // =================================================
-    // UPDATE LOCAL STORAGE
-    // =================================================
-
-    let likedVideoIds = getLikedVideoIds();
-
-    if (newLikeStatus) {
-      if (!likedVideoIds.includes(String(videoId))) {
-        likedVideoIds.push(String(videoId));
-      }
-    } else {
-      likedVideoIds = likedVideoIds.filter(function (id) {
-        return String(id) !== String(videoId);
-      });
-    }
-
-    saveLikedVideoIds(likedVideoIds);
-
-    // =================================================
-    // UPDATE COUNT
-    // =================================================
-
-    updateLikedVideosCount();
-
-    // =================================================
-    // UPDATE BUTTON
-    // =================================================
-
-    if (newLikeStatus) {
-      likeButton.classList.add("liked");
-
-      likeButton.innerHTML = "♥ Liked";
-    } else {
-      likeButton.classList.remove("liked");
-
-      likeButton.innerHTML = "♡ Like";
-    }
-  } catch (error) {
-    console.error("Like/Unlike error:", error);
-
-    alert("Unable to update like status.");
-  } finally {
-    likeButton.disabled = false;
-  }
+    `;
 }
 
 // =====================================================
@@ -481,233 +317,360 @@ async function toggleLikeVideo(videoId, likeButton) {
 // =====================================================
 
 function renderVideos() {
+  console.log("=================================");
+  console.log("renderVideos() called");
+  console.log("Total videos:", videos.length);
+  console.log("=================================");
+
+  // ---------------------------------------------
+  // Get containers
+  // ---------------------------------------------
+
   const recommendedContainer = document.getElementById("recommendedVideos");
 
   const trendingContainer = document.getElementById("trendingVideos");
 
   const musicContainer = document.getElementById("musicVideos");
 
-  const moviesContainer = document.getElementById("movieVideos");
+  const movieContainer = document.getElementById("movieVideos");
 
-  if (
-    !recommendedContainer ||
-    !trendingContainer ||
-    !musicContainer ||
-    !moviesContainer
-  ) {
-    console.error("Video containers are missing from HTML.");
+  console.log("recommendedVideos:", recommendedContainer);
+
+  console.log("trendingVideos:", trendingContainer);
+
+  console.log("musicVideos:", musicContainer);
+
+  console.log("movieVideos:", movieContainer);
+
+  // ---------------------------------------------
+  // Clear containers if available
+  // ---------------------------------------------
+
+  if (recommendedContainer) {
+    recommendedContainer.innerHTML = "";
+  }
+
+  if (trendingContainer) {
+    trendingContainer.innerHTML = "";
+  }
+
+  if (musicContainer) {
+    musicContainer.innerHTML = "";
+  }
+
+  if (movieContainer) {
+    movieContainer.innerHTML = "";
+  }
+
+  // ---------------------------------------------
+  // Check if videos exist
+  // ---------------------------------------------
+
+  if (!videos || videos.length === 0) {
+    console.warn("No videos available for rendering.");
+
+    if (recommendedContainer) {
+      recommendedContainer.innerHTML = `
+                <div style="
+                    padding:30px;
+                    text-align:center;
+                    font-size:18px;
+                ">
+                    No videos found.
+                </div>
+            `;
+    }
 
     return;
   }
 
-  recommendedContainer.innerHTML = "";
-  trendingContainer.innerHTML = "";
-  musicContainer.innerHTML = "";
-  moviesContainer.innerHTML = "";
+  // ---------------------------------------------
+  // Render every video
+  // ---------------------------------------------
 
-  videos.forEach(function (video) {
+  videos.forEach((video) => {
+    const category = String(video.category || "recommended")
+      .trim()
+      .toLowerCase();
+
+    console.log(
+      "Rendering video:",
+      video.id,
+      video.title,
+      "Category:",
+      category,
+    );
+
     const card = createVideoCard(video);
 
-    if (video.category === "recommended") {
-      recommendedContainer.innerHTML += card;
-    } else if (video.category === "trending") {
-      trendingContainer.innerHTML += card;
-    } else if (video.category === "music") {
-      musicContainer.innerHTML += card;
-    } else if (video.category === "movies") {
-      moviesContainer.innerHTML += card;
+    // -----------------------------------------
+    // Trending
+    // -----------------------------------------
+
+    if (category.includes("trending")) {
+      if (trendingContainer) {
+        trendingContainer.insertAdjacentHTML("beforeend", card);
+      }
+    }
+
+    // -----------------------------------------
+    // Music
+    // -----------------------------------------
+    else if (category.includes("music") || category.includes("song")) {
+      if (musicContainer) {
+        musicContainer.insertAdjacentHTML("beforeend", card);
+      }
+    }
+
+    // -----------------------------------------
+    // Movies
+    // -----------------------------------------
+    else if (category.includes("movie") || category.includes("film")) {
+      if (movieContainer) {
+        movieContainer.insertAdjacentHTML("beforeend", card);
+      }
+    }
+
+    // -----------------------------------------
+    // Recommended
+    // -----------------------------------------
+    else {
+      if (recommendedContainer) {
+        recommendedContainer.insertAdjacentHTML("beforeend", card);
+      }
     }
   });
 
+  // ---------------------------------------------
+  // Attach events
+  // ---------------------------------------------
+
   attachVideoEvents();
 
+  // ---------------------------------------------
+  // Update liked count
+  // ---------------------------------------------
+
   updateLikedVideosCount();
+
+  // ---------------------------------------------
+  // Debug information
+  // ---------------------------------------------
+
+  console.log(
+    "Recommended cards:",
+    recommendedContainer ? recommendedContainer.children.length : 0,
+  );
+
+  console.log(
+    "Trending cards:",
+    trendingContainer ? trendingContainer.children.length : 0,
+  );
+
+  console.log(
+    "Music cards:",
+    musicContainer ? musicContainer.children.length : 0,
+  );
+
+  console.log(
+    "Movie cards:",
+    movieContainer ? movieContainer.children.length : 0,
+  );
+
+  console.log(
+    "Total video cards:",
+    document.querySelectorAll(".video-card").length,
+  );
+
+  console.log("Video rendering completed.");
 }
 
 // =====================================================
-// VIDEO CLICK + LIKE BUTTON EVENTS
+// ATTACH VIDEO EVENTS
 // =====================================================
 
 function attachVideoEvents() {
-  const articles = document.querySelectorAll(
-    "#recommendedVideos article, " +
-      "#trendingVideos article, " +
-      "#musicVideos article, " +
-      "#movieVideos article",
-  );
+  const articles = document.querySelectorAll("article[data-id]");
 
-  articles.forEach(function (article) {
-    article.style.cursor = "pointer";
+  console.log("Attaching events to:", articles.length, "videos");
 
-    // =================================================
-    // VIDEO CLICK
-    // =================================================
+  articles.forEach((article) => {
+    // -----------------------------------------
+    // Open video
+    // -----------------------------------------
 
     article.addEventListener("click", function (event) {
-      // Do not open video when Like clicked
+      // Don't open video when clicking Like
       if (event.target.closest(".like-btn")) {
         return;
       }
 
-      const id = article.dataset.id;
+      const videoId = article.dataset.id;
 
-      console.log("Opening video:", id);
+      console.log("Opening video:", videoId);
 
-      // =============================================
-      // ADD VIDEO TO WATCH HISTORY
-      // =============================================
+      addToWatchHistory(videoId);
 
-      const video = getVideoById(id);
-
-      if (video) {
-        addToWatchHistory(video);
-      }
-
-      // =============================================
-      // OPEN VIDEO PAGE
-      // =============================================
-
-      window.open("video.html?id=" + encodeURIComponent(id), "_blank");
+      window.location.href = `video.html?id=${videoId}`;
     });
 
-    // =================================================
-    // LIKE BUTTON
-    // =================================================
+    // -----------------------------------------
+    // Like button
+    // -----------------------------------------
 
     const likeButton = article.querySelector(".like-btn");
 
     if (likeButton) {
-      likeButton.addEventListener("click", function (event) {
+      likeButton.addEventListener("click", async function (event) {
         event.preventDefault();
-
         event.stopPropagation();
 
-        const videoId = this.dataset.id;
+        const videoId = likeButton.dataset.id;
 
-        console.log("Like button clicked:", videoId);
-
-        toggleLikeVideo(videoId, this);
+        await toggleLike(videoId, likeButton);
       });
     }
 
-    // =================================================
-    // HOVER EFFECT
-    // =================================================
+    // -----------------------------------------
+    // Hover effect
+    // -----------------------------------------
 
     article.addEventListener("mouseenter", function () {
-      article.style.transform = "scale(1.02)";
+      article.style.transform = "translateY(-3px)";
     });
 
     article.addEventListener("mouseleave", function () {
-      article.style.transform = "scale(1)";
+      article.style.transform = "translateY(0)";
     });
   });
 }
 
 // =====================================================
-// GET ACTIVE CATEGORY
+// LIKE / UNLIKE VIDEO
 // =====================================================
 
-function getActiveCategory() {
-  const trendingSection = document.getElementById("trending-section");
+async function toggleLike(videoId, likeButton) {
+  let likedVideoIds = getLikedVideoIds();
 
-  const musicSection = document.getElementById("music-section");
+  const isCurrentlyLiked = likedVideoIds.includes(String(videoId));
 
-  const moviesSection = document.getElementById("movies");
+  try {
+    let response;
 
-  if (trendingSection && trendingSection.style.display !== "none") {
-    return "trending";
+    // -----------------------------------------
+    // UNLIKE
+    // -----------------------------------------
+
+    if (isCurrentlyLiked) {
+      response = await fetch(`${API_URL}/${videoId}/like`, {
+        method: "DELETE",
+      });
+    }
+
+    // -----------------------------------------
+    // LIKE
+    // -----------------------------------------
+    else {
+      response = await fetch(`${API_URL}/${videoId}/like`, {
+        method: "POST",
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`Like API failed: ${response.status}`);
+    }
+
+    // -----------------------------------------
+    // Update local storage
+    // -----------------------------------------
+
+    if (isCurrentlyLiked) {
+      likedVideoIds = likedVideoIds.filter(
+        (id) => String(id) !== String(videoId),
+      );
+
+      likeButton.classList.remove("liked");
+
+      likeButton.textContent = "♡ Like";
+    } else {
+      likedVideoIds.push(String(videoId));
+
+      likeButton.classList.add("liked");
+
+      likeButton.textContent = "♥ Liked";
+    }
+
+    saveLikedVideoIds(likedVideoIds);
+
+    updateLikedVideosCount();
+
+    // Update global video object
+    const video = getVideoById(videoId);
+
+    if (video) {
+      video.liked = !isCurrentlyLiked;
+    }
+
+    console.log("Like status updated:", videoId, !isCurrentlyLiked);
+  } catch (error) {
+    console.error("Error updating like:", error);
+
+    alert("Unable to update like. Please try again.");
   }
-
-  if (musicSection && musicSection.style.display !== "none") {
-    return "music";
-  }
-
-  if (moviesSection && moviesSection.style.display !== "none") {
-    return "movies";
-  }
-
-  return "recommended";
 }
 
 // =====================================================
-// SEARCH VIDEOS USING SPRING BOOT SEARCH API
+// SEARCH VIDEOS
 // =====================================================
 
 async function searchVideos() {
-  if (!searchInput) {
-    return;
-  }
+  const query = searchInput ? searchInput.value.trim() : "";
 
-  const value = searchInput.value.trim();
-
-  // =================================================
-  // EMPTY SEARCH
-  // =================================================
-
-  if (value === "") {
-    resetSearch();
+  if (!query) {
+    loadVideosFromAPI();
 
     return;
   }
 
-  const activeCategory = getActiveCategory();
-
-  console.log("Searching for:", value);
-
-  console.log("Active category:", activeCategory);
-
-  // =================================================
-  // BUILD SEARCH URL
-  // =================================================
-
-  const searchURL =
-    SEARCH_API_URL +
-    "?keyword=" +
-    encodeURIComponent(value) +
-    "&category=" +
-    encodeURIComponent(activeCategory);
-
-  console.log("Search API:", searchURL);
-
-  // =================================================
-  // SHOW SPINNER
-  // =================================================
+  console.log("Searching for:", query);
 
   if (spinner) {
-    spinner.style.display = "flex";
+    spinner.style.display = "block";
   }
 
   try {
-    const response = await fetch(searchURL);
+    const url = `${SEARCH_API_URL}?keyword=${encodeURIComponent(query)}`;
+
+    console.log("Search API URL:", url);
+
+    const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error("Search API request failed. Status: " + response.status);
+      throw new Error(`Search failed: ${response.status}`);
     }
 
-    const searchResults = await response.json();
+    const data = await response.json();
 
-    console.log("Search results received:", searchResults);
+    console.log("Search results:", data);
 
-    // =================================================
-    // RESTORE LIKE STATUS
-    // =================================================
+    if (!Array.isArray(data)) {
+      throw new Error("Search API did not return an array.");
+    }
 
+    videos = data;
+
+    // Restore likes
     const likedVideoIds = getLikedVideoIds();
 
-    searchResults.forEach(function (video) {
+    videos.forEach((video) => {
       video.liked = likedVideoIds.includes(String(video.id));
     });
 
-    // =================================================
-    // DISPLAY RESULTS
-    // =================================================
-
-    renderSearchResults(searchResults, activeCategory);
+    renderVideos();
   } catch (error) {
-    console.error("Search API error:", error);
+    console.error("Search error:", error);
 
-    renderSearchAPIError();
+    showAPIError("Unable to search videos.");
   } finally {
     if (spinner) {
       spinner.style.display = "none";
@@ -716,634 +679,199 @@ async function searchVideos() {
 }
 
 // =====================================================
-// RENDER SEARCH RESULTS
-// =====================================================
-
-function renderSearchResults(videoList, category) {
-  const containers = {
-    recommended: document.getElementById("recommendedVideos"),
-
-    trending: document.getElementById("trendingVideos"),
-
-    music: document.getElementById("musicVideos"),
-
-    movies: document.getElementById("movieVideos"),
-  };
-
-  const container = containers[category];
-
-  if (!container) {
-    console.error("Container not found:", category);
-
-    return;
-  }
-
-  container.innerHTML = "";
-
-  // =================================================
-  // NO RESULTS
-  // =================================================
-
-  if (!videoList || videoList.length === 0) {
-    container.innerHTML = `
-
-      <div class="no-results">
-
-        <h3>
-          No videos found
-        </h3>
-
-        <p>
-          Try another search term.
-        </p>
-
-      </div>
-
-    `;
-
-    return;
-  }
-
-  // =================================================
-  // DISPLAY RESULTS
-  // =================================================
-
-  videoList.forEach(function (video) {
-    container.innerHTML += createVideoCard(video);
-  });
-
-  attachVideoEvents();
-
-  updateLikedVideosCount();
-}
-
-// =====================================================
-// SEARCH API ERROR
-// =====================================================
-
-function renderSearchAPIError() {
-  const category = getActiveCategory();
-
-  const containers = {
-    recommended: document.getElementById("recommendedVideos"),
-
-    trending: document.getElementById("trendingVideos"),
-
-    music: document.getElementById("musicVideos"),
-
-    movies: document.getElementById("movieVideos"),
-  };
-
-  const container = containers[category];
-
-  if (!container) {
-    return;
-  }
-
-  container.innerHTML = `
-
-    <div class="no-results">
-
-      <h3>
-        Unable to search videos
-      </h3>
-
-      <p>
-        Please make sure the Spring Boot
-        backend is running on port 8080.
-      </p>
-
-      <p>
-        Search API:
-        <strong>
-          /api/videos/search
-        </strong>
-      </p>
-
-    </div>
-
-  `;
-}
-
-// =====================================================
 // SEARCH BUTTON
 // =====================================================
 
 if (searchBtn) {
-  searchBtn.addEventListener("click", function () {
-    searchVideos();
-  });
+  searchBtn.addEventListener("click", searchVideos);
 }
 
 // =====================================================
-// ENTER KEY SEARCH
+// SEARCH ENTER KEY
 // =====================================================
 
 if (searchInput) {
   searchInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
+      event.preventDefault();
+
       searchVideos();
     }
   });
-
-  searchInput.addEventListener("input", function () {
-    toggleClearButton();
-  });
-}
-
-// =====================================================
-// CLEAR BUTTON
-// =====================================================
-
-function toggleClearButton() {
-  if (!searchInput || !clearBtn) {
-    return;
-  }
-
-  if (searchInput.value.trim() !== "") {
-    clearBtn.style.display = "flex";
-  } else {
-    clearBtn.style.display = "none";
-  }
 }
 
 // =====================================================
 // CLEAR SEARCH
 // =====================================================
 
-function clearSearch() {
-  if (!searchInput) {
-    return;
-  }
-
-  searchInput.value = "";
-
-  toggleClearButton();
-
-  if (spinner) {
-    spinner.style.display = "none";
-  }
-
-  renderVideos();
-
-  searchInput.focus();
-}
-
 if (clearBtn) {
-  clearBtn.addEventListener("click", clearSearch);
-}
-
-// =====================================================
-// RESET SEARCH
-// =====================================================
-
-function resetSearch() {
-  if (searchInput) {
-    searchInput.value = "";
-  }
-
-  toggleClearButton();
-
-  if (spinner) {
-    spinner.style.display = "none";
-  }
-
-  renderVideos();
-
-  updateLikedVideosCount();
-}
-
-// =====================================================
-// PROFILE MENU
-// =====================================================
-
-const profileBtn = document.getElementById("profileBtn");
-
-const profileMenu = document.getElementById("profileMenu");
-
-if (profileBtn && profileMenu) {
-  profileBtn.addEventListener("click", function (event) {
-    event.stopPropagation();
-
-    if (profileMenu.style.display === "block") {
-      profileMenu.style.display = "none";
-    } else {
-      profileMenu.style.display = "block";
+  clearBtn.addEventListener("click", function () {
+    if (searchInput) {
+      searchInput.value = "";
     }
-  });
 
-  profileMenu.addEventListener("click", function (event) {
-    event.stopPropagation();
-  });
-
-  document.addEventListener("click", function () {
-    profileMenu.style.display = "none";
+    loadVideosFromAPI();
   });
 }
 
 // =====================================================
-// HELP PANEL
+// SIDEBAR CATEGORY FILTER
 // =====================================================
 
-(function () {
-  const profileContainer = document.querySelector(".profile-container");
+function showOnlySection(sectionId) {
+  const sections = [
+    "recommended-section",
+    "trending-section",
+    "music-section",
+    "movies",
+  ];
 
-  if (!profileContainer) {
-    return;
-  }
+  sections.forEach((id) => {
+    const section = document.getElementById(id);
 
-  const helpBtn = profileContainer.querySelector("#helpBtn");
-
-  const helpMenu = profileContainer.querySelector("#helpMenu");
-
-  const closeHelp = profileContainer.querySelector("#closeHelp");
-
-  const helpSearch = profileContainer.querySelector("#helpSearch");
-
-  if (!helpBtn || !helpMenu) {
-    return;
-  }
-
-  helpBtn.addEventListener("click", function (event) {
-    event.stopPropagation();
-
-    const open = helpMenu.classList.contains("is-open");
-
-    if (open) {
-      helpMenu.classList.remove("is-open");
-
-      helpMenu.setAttribute("aria-hidden", "true");
-    } else {
-      helpMenu.classList.add("is-open");
-
-      helpMenu.setAttribute("aria-hidden", "false");
-
-      if (helpSearch) {
-        helpSearch.focus();
-      }
+    if (section) {
+      section.style.display = id === sectionId ? "block" : "none";
     }
   });
+}
 
-  helpMenu.addEventListener("click", function (event) {
-    event.stopPropagation();
-  });
+// =====================================================
+// SIDEBAR LINKS
+// =====================================================
 
-  if (closeHelp) {
-    closeHelp.addEventListener("click", function (event) {
-      event.stopPropagation();
+const sidebarLinks = document.querySelectorAll("aside a, aside button");
 
-      helpMenu.classList.remove("is-open");
+sidebarLinks.forEach((link) => {
+  link.addEventListener("click", function () {
+    const text = this.textContent.trim().toLowerCase();
 
-      helpMenu.setAttribute("aria-hidden", "true");
-    });
-  }
-
-  document.addEventListener("click", function () {
-    if (helpMenu.classList.contains("is-open")) {
-      helpMenu.classList.remove("is-open");
-
-      helpMenu.setAttribute("aria-hidden", "true");
+    if (text.includes("home")) {
+      showOnlySection("recommended-section");
+    } else if (text.includes("trending")) {
+      showOnlySection("trending-section");
+    } else if (text.includes("music")) {
+      showOnlySection("music-section");
+    } else if (text.includes("movie")) {
+      showOnlySection("movies");
     }
   });
-
-  if (helpSearch) {
-    helpSearch.addEventListener("input", function () {
-      const q = helpSearch.value.trim().toLowerCase();
-
-      const items = helpMenu.querySelectorAll(".help-item");
-
-      items.forEach(function (item) {
-        const text = item.textContent.trim().toLowerCase();
-
-        item.style.display = text.includes(q) ? "flex" : "none";
-      });
-    });
-  }
-})();
+});
 
 // =====================================================
 // WATCH LATER
 // =====================================================
 
-const watchLaterBtn = document.getElementById("watchLaterBtn");
+function getWatchLaterVideos() {
+  try {
+    return JSON.parse(localStorage.getItem("watchLaterVideos")) || [];
+  } catch (error) {
+    console.error("Error reading watch later:", error);
 
-if (watchLaterBtn) {
-  watchLaterBtn.addEventListener("click", function () {
-    window.location.href = "watchlater.html";
-  });
+    return [];
+  }
 }
 
-// =====================================================
-// SIDEBAR
-// =====================================================
+function saveWatchLaterVideos(ids) {
+  localStorage.setItem("watchLaterVideos", JSON.stringify(ids));
+}
 
-const menuItems = document.querySelectorAll("aside li");
+function toggleWatchLater(videoId) {
+  let ids = getWatchLaterVideos();
 
-menuItems.forEach(function (item) {
-  item.addEventListener("click", function () {
-    menuItems.forEach(function (li) {
-      li.style.background = "";
-    });
+  videoId = String(videoId);
 
-    this.style.background = "red";
-  });
-});
-
-// =====================================================
-// THEME / APPEARANCE
-// =====================================================
-
-document.addEventListener("DOMContentLoaded", function () {
-  const appearanceBtn = document.getElementById("appearanceBtn");
-
-  const appearanceMenu = document.getElementById("appearanceMenu");
-
-  const backAppearance = document.getElementById("backAppearance");
-
-  if (appearanceBtn && appearanceMenu) {
-    appearanceBtn.addEventListener("click", function () {
-      appearanceMenu.style.display = "block";
-    });
+  if (ids.includes(videoId)) {
+    ids = ids.filter((id) => String(id) !== videoId);
+  } else {
+    ids.push(videoId);
   }
 
-  if (backAppearance && appearanceMenu) {
-    backAppearance.addEventListener("click", function () {
-      appearanceMenu.style.display = "none";
-    });
+  saveWatchLaterVideos(ids);
+
+  console.log("Watch later videos:", ids);
+}
+
+// =====================================================
+// SUBSCRIPTIONS
+// =====================================================
+
+function getSubscriptions() {
+  try {
+    return JSON.parse(localStorage.getItem("subscriptions")) || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveSubscriptions(ids) {
+  localStorage.setItem("subscriptions", JSON.stringify(ids));
+}
+
+function toggleSubscription(channel) {
+  let subscriptions = getSubscriptions();
+
+  if (subscriptions.includes(channel)) {
+    subscriptions = subscriptions.filter((item) => item !== channel);
+  } else {
+    subscriptions.push(channel);
   }
 
-  document.querySelectorAll('input[name="theme"]').forEach(function (item) {
-    item.addEventListener("change", function () {
-      if (this.value === "dark") {
-        document.body.classList.add("dark-mode");
-      } else if (this.value === "light") {
-        document.body.classList.remove("dark-mode");
-      } else {
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          document.body.classList.add("dark-mode");
-        } else {
-          document.body.classList.remove("dark-mode");
-        }
-      }
-    });
-  });
-});
+  saveSubscriptions(subscriptions);
 
-// =====================================================
-// SIDEBAR TOGGLE
-// =====================================================
-
-const menuBtn = document.getElementById("menuBtn");
-
-const sidebar = document.getElementById("sidebar");
-
-const hideItems = document.querySelectorAll(".hide-item");
-
-if (menuBtn && sidebar) {
-  menuBtn.addEventListener("click", function () {
-    sidebar.classList.toggle("small");
-
-    hideItems.forEach(function (item) {
-      if (item.style.display === "none") {
-        item.style.display = "block";
-      } else {
-        item.style.display = "none";
-      }
-    });
-  });
+  console.log("Subscriptions:", subscriptions);
 }
 
 // =====================================================
-// NOTIFICATION POPUP
+// THEME
 // =====================================================
 
-const notificationBtn = document.getElementById("notificationBtn");
-
-const notificationPopup = document.getElementById("notificationPopup");
-
-const notificationContainer = document.querySelector(".notification-container");
-
-if (notificationBtn && notificationPopup) {
-  notificationBtn.addEventListener("click", function (event) {
-    event.stopPropagation();
-
-    notificationPopup.classList.toggle("show");
-  });
-
-  notificationPopup.addEventListener("click", function (event) {
-    event.stopPropagation();
-  });
-
-  document.addEventListener("click", function (event) {
-    if (
-      notificationContainer &&
-      !notificationContainer.contains(event.target)
-    ) {
-      notificationPopup.classList.remove("show");
-    }
-  });
-}
-
-// =====================================================
-// HEADER BUTTONS
-// =====================================================
-
-const headerButtons = document.querySelectorAll("header button");
-
-headerButtons.forEach(function (btn) {
-  btn.addEventListener("click", function () {
-    if (this.innerHTML.includes("🔔")) {
-      // Notification handled separately
-    }
-
-    if (this.innerHTML.includes("👤")) {
-      console.log("User Profile");
-    }
-  });
-});
-
-// =====================================================
-// HOME / TRENDING / MUSIC / MOVIES
-// =====================================================
-
-function showSection(sectionName) {
-  const recommendedSection = document.getElementById("recommended-section");
-
-  const trendingSection = document.getElementById("trending-section");
-
-  const musicSection = document.getElementById("music-section");
-
-  const moviesSection = document.getElementById("movies");
-
-  if (recommendedSection) {
-    recommendedSection.style.display =
-      sectionName === "recommended" ? "block" : "none";
+function applyTheme(theme) {
+  if (theme === "dark") {
+    document.body.classList.add("dark-mode");
+  } else {
+    document.body.classList.remove("dark-mode");
   }
-
-  if (trendingSection) {
-    trendingSection.style.display =
-      sectionName === "trending" ? "block" : "none";
-  }
-
-  if (musicSection) {
-    musicSection.style.display = sectionName === "music" ? "block" : "none";
-  }
-
-  if (moviesSection) {
-    moviesSection.style.display = sectionName === "movies" ? "block" : "none";
-  }
-
-  resetSearch();
 }
 
-// =====================================================
-// HOME
-// =====================================================
+const savedTheme = localStorage.getItem("theme");
 
-const homeBtn = document.getElementById("home");
-
-if (homeBtn) {
-  homeBtn.addEventListener("click", function () {
-    showSection("recommended");
-  });
-}
-
-// =====================================================
-// TRENDING
-// =====================================================
-
-const trendingBtn = document.getElementById("trending");
-
-if (trendingBtn) {
-  trendingBtn.addEventListener("click", function () {
-    showSection("trending");
-  });
-}
-
-// =====================================================
-// MUSIC
-// =====================================================
-
-const musicBtn = document.getElementById("music");
-
-if (musicBtn) {
-  musicBtn.addEventListener("click", function () {
-    showSection("music");
-  });
-}
-
-// =====================================================
-// MOVIES
-// =====================================================
-
-const moviesBtn = document.getElementById("moviesBtn");
-
-if (moviesBtn) {
-  moviesBtn.addEventListener("click", function () {
-    showSection("movies");
-  });
-}
-
-// =====================================================
-// FOOTER
-// =====================================================
-
-const footerText = document.querySelector("footer p");
-
-if (footerText) {
-  footerText.innerHTML = `&copy; ${new Date().getFullYear()} RTube. This is a dummy webpage created for learning purposes.`;
-}
-
-// =====================================================
-// VOICE SEARCH
-// =====================================================
-
-const voiceBtn = document.getElementById("voiceBtn");
-
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (voiceBtn && SpeechRecognition) {
-  const recognition = new SpeechRecognition();
-
-  recognition.lang = "en-US";
-
-  recognition.interimResults = false;
-
-  recognition.maxAlternatives = 1;
-
-  voiceBtn.addEventListener("click", function () {
-    recognition.start();
-
-    voiceBtn.innerHTML = "🎙️";
-  });
-
-  recognition.addEventListener("result", function (event) {
-    const transcript = event.results[0][0].transcript;
-
-    if (searchInput) {
-      searchInput.value = transcript;
-
-      toggleClearButton();
-
-      searchVideos();
-    }
-  });
-
-  recognition.addEventListener("end", function () {
-    voiceBtn.innerHTML = "🎤";
-  });
-
-  recognition.addEventListener("error", function () {
-    voiceBtn.innerHTML = "🎤";
-
-    alert("Voice recognition failed.");
-  });
-} else if (voiceBtn) {
-  voiceBtn.style.display = "none";
+if (savedTheme) {
+  applyTheme(savedTheme);
 }
 
 // =====================================================
 // LOGOUT
 // =====================================================
 
-const logoutBtn = document.getElementById("logoutBtn");
+function logout() {
+  localStorage.removeItem("isLoggedIn");
 
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", function (event) {
-    event.preventDefault();
+  localStorage.removeItem("username");
 
-    const confirmLogout = confirm("Are you sure you want to logout?");
+  localStorage.removeItem("userEmail");
 
-    if (confirmLogout) {
-      localStorage.removeItem("isLoggedIn");
+  console.log("User logged out.");
 
-      localStorage.removeItem("username");
-
-      localStorage.removeItem("userEmail");
-
-      window.open("about:blank", "_blank");
-    }
-  });
+  window.location.href = "youtube_mainhtml.html";
 }
 
 // =====================================================
 // CREATE MENU
 // =====================================================
 
-const createBtn = document.getElementById("createBtn");
+function setupCreateMenu() {
+  const createButton = document.getElementById("createButton");
 
-const createMenu = document.getElementById("createMenu");
+  const createMenu = document.getElementById("createMenu");
 
-if (createBtn && createMenu) {
-  createBtn.addEventListener("click", function (event) {
+  if (!createButton || !createMenu) {
+    return;
+  }
+
+  createButton.addEventListener("click", function (event) {
     event.stopPropagation();
 
     createMenu.classList.toggle("show");
-  });
-
-  createMenu.addEventListener("click", function (event) {
-    event.stopPropagation();
   });
 
   document.addEventListener("click", function () {
@@ -1351,191 +879,107 @@ if (createBtn && createMenu) {
   });
 }
 
-// =====================================================
-// UPLOAD VIDEO
-// =====================================================
-
-const uploadVideoBtn = document.getElementById("uploadVideoBtn");
-
-if (uploadVideoBtn) {
-  uploadVideoBtn.addEventListener("click", function () {
-    window.location.href = "upload.html";
-  });
-}
+setupCreateMenu();
 
 // =====================================================
-// GO LIVE
+// NOTIFICATION
 // =====================================================
 
-const goLiveBtn = document.getElementById("goLiveBtn");
+function setupNotifications() {
+  const notificationButton = document.getElementById("notificationButton");
 
-if (goLiveBtn) {
-  goLiveBtn.addEventListener("click", function () {
-    window.location.href = "live.html";
-  });
-}
+  const notificationPopup = document.getElementById("notificationPopup");
 
-// =====================================================
-// CREATE POST
-// =====================================================
+  const closeNotification = document.getElementById("closeNotification");
 
-const createPostBtn = document.getElementById("createPostBtn");
+  if (notificationButton && notificationPopup) {
+    notificationButton.addEventListener("click", function () {
+      notificationPopup.classList.toggle("show");
+    });
+  }
 
-if (createPostBtn) {
-  createPostBtn.addEventListener("click", function () {
-    window.location.href = "create-post.html";
-  });
-}
-
-// =====================================================
-// WATCH HISTORY
-// =====================================================
-
-const chips = document.querySelectorAll(".chip");
-
-const items = document.querySelectorAll(".hist-item");
-
-const emptyState = document.getElementById("emptyState");
-
-function applyFilter(filter) {
-  let visibleCount = 0;
-
-  items.forEach(function (item) {
-    const match = filter === "all" || item.dataset.category === filter;
-
-    item.style.display = match ? "flex" : "none";
-
-    if (match) {
-      visibleCount++;
-    }
-  });
-
-  if (emptyState) {
-    emptyState.style.display = visibleCount === 0 ? "block" : "none";
+  if (closeNotification) {
+    closeNotification.addEventListener("click", function () {
+      notificationPopup.classList.remove("show");
+    });
   }
 }
 
-chips.forEach(function (chip) {
-  chip.addEventListener("click", function () {
-    chips.forEach(function (c) {
-      c.classList.remove("active");
-    });
-
-    chip.classList.add("active");
-
-    applyFilter(chip.dataset.filter);
-  });
-});
+setupNotifications();
 
 // =====================================================
-// HISTORY SEARCH
+// PROFILE MENU
 // =====================================================
 
-const historySearch = document.getElementById("historySearch");
+function setupProfileMenu() {
+  const profileButton = document.getElementById("profileButton");
 
-if (historySearch) {
-  historySearch.addEventListener("input", function (e) {
-    const q = e.target.value.trim().toLowerCase();
+  const profileMenu = document.getElementById("profileMenu");
 
-    let visibleCount = 0;
-
-    items.forEach(function (item) {
-      const title = item.dataset.title || "";
-
-      const match = title.toLowerCase().includes(q);
-
-      item.style.display = match ? "flex" : "none";
-
-      if (match) {
-        visibleCount++;
-      }
-    });
-
-    if (emptyState) {
-      emptyState.style.display = visibleCount === 0 ? "block" : "none";
-    }
-  });
-}
-
-// =====================================================
-// CLEAR ALL HISTORY
-// =====================================================
-
-const clearAllBtn = document.getElementById("clearAllBtn");
-
-if (clearAllBtn) {
-  clearAllBtn.addEventListener("click", function () {
-    if (confirm("Clear all watch history? This cannot be undone.")) {
-      // =============================================
-      // CLEAR LOCAL STORAGE HISTORY
-      // =============================================
-
-      localStorage.removeItem(WATCH_HISTORY_KEY);
-
-      // =============================================
-      // REMOVE HISTORY ITEMS FROM PAGE
-      // =============================================
-
-      items.forEach(function (item) {
-        item.remove();
-      });
-
-      if (emptyState) {
-        emptyState.style.display = "block";
-      }
-    }
-  });
-}
-
-// =====================================================
-// PAUSE / RESUME HISTORY
-// =====================================================
-
-const pauseBtn = document.getElementById("pauseBtn");
-
-const pauseLabel = document.getElementById("pauseLabel");
-
-let paused = false;
-
-if (pauseBtn) {
-  pauseBtn.addEventListener("click", function () {
-    paused = !paused;
-
-    if (pauseLabel) {
-      pauseLabel.textContent = paused
-        ? "Resume watch history"
-        : "Pause watch history";
-    }
-
-    // Store history pause state
-    localStorage.setItem("watchHistoryPaused", paused);
-  });
-}
-
-// =====================================================
-// RESTORE HISTORY PAUSE STATE
-// =====================================================
-
-const savedPausedState = localStorage.getItem("watchHistoryPaused");
-
-if (savedPausedState === "true") {
-  paused = true;
-
-  if (pauseLabel) {
-    pauseLabel.textContent = "Resume watch history";
+  if (!profileButton || !profileMenu) {
+    return;
   }
+
+  profileButton.addEventListener("click", function (event) {
+    event.stopPropagation();
+
+    profileMenu.classList.toggle("show");
+  });
+
+  document.addEventListener("click", function () {
+    profileMenu.classList.remove("show");
+  });
+}
+
+setupProfileMenu();
+
+// =====================================================
+// VOICE SEARCH
+// =====================================================
+
+function startVoiceSearch() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Voice search is not supported in this browser.");
+
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = "en-IN";
+
+  recognition.interimResults = false;
+
+  recognition.maxAlternatives = 1;
+
+  recognition.start();
+
+  recognition.onresult = function (event) {
+    const text = event.results[0][0].transcript;
+
+    if (searchInput) {
+      searchInput.value = text;
+    }
+
+    searchVideos();
+  };
+
+  recognition.onerror = function (event) {
+    console.error("Voice search error:", event.error);
+  };
 }
 
 // =====================================================
-// MANAGE HISTORY
+// VOICE SEARCH BUTTON
 // =====================================================
 
-const manageBtn = document.getElementById("manageBtn");
+const voiceSearchButton = document.getElementById("voiceSearchButton");
 
-if (manageBtn) {
-  manageBtn.addEventListener("click", function () {
-    alert("Manage all history settings would open here.");
-  });
+if (voiceSearchButton) {
+  voiceSearchButton.addEventListener("click", startVoiceSearch);
 }
 
 // =====================================================
@@ -1543,17 +987,9 @@ if (manageBtn) {
 // =====================================================
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("RTube frontend loaded.");
-
-  // ===============================================
-  // UPDATE LIKED COUNT
-  // ===============================================
+  console.log("DOM fully loaded.");
 
   updateLikedVideosCount();
-
-  // ===============================================
-  // LOAD VIDEOS
-  // ===============================================
 
   loadVideosFromAPI();
 });
