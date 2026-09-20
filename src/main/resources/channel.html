@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Raunak Rej - Your Channel</title>
+
+    <link rel="stylesheet" href="channel.css">
+    <link rel="stylesheet" href="youtube_style.css">
+    <style>
+        .channel-sidebar {
+            position: fixed;
+            top: 88px;
+            left: 0;
+            width: 250px;
+            height: calc(100vh - 88px);
+            padding: 22px 15px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .channel-sidebar h3 {
+            margin: 0 10px 16px;
+        }
+
+        .channel-sidebar ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        .channel-sidebar li {
+            padding: 12px 14px;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .channel-sidebar li:hover,
+        .channel-sidebar li.active {
+            background: var(--hover);
+        }
+
+        .channel-page {
+            width: min(1200px, calc(100% - 290px));
+            margin: 24px 24px 50px 274px;
+        }
+
+        .channel-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 520px;
+            margin: 0 24px;
+        }
+
+        .channel-search input {
+            width: 100%;
+            height: 40px;
+            padding: 0 18px;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .channel-search button {
+            width: 40px;
+            height: 40px;
+            border: 0;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        body.sidebar-collapsed .channel-sidebar {
+            display: none;
+        }
+
+        body.sidebar-collapsed .channel-page {
+            width: min(1200px, calc(100% - 48px));
+            margin-left: 24px;
+        }
+
+        @media (max-width: 760px) {
+            .channel-sidebar {
+                display: none;
+            }
+
+            .channel-page {
+                width: calc(100% - 32px);
+                margin: 16px;
+            }
+
+            .channel-search {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================
+         TOP HEADER
+    ========================== -->
+
+    <header class="channel-topbar">
+        <div class="left"><button id="menuBtn" type="button">☰</button><h1>Your Channel</h1></div>
+        <div class="channel-search">
+            <input id="searchInput" type="text" placeholder="Search videos..." aria-label="Search videos">
+            <button id="searchBtn" type="button">🔍</button>
+        </div>
+        <div class="header-right">
+            <button id="createBtn" class="create-btn" type="button">📹</button>
+            <div id="createMenu" class="create-menu">
+                <div class="create-option" id="uploadVideoBtn"><span>▣</span><span>Upload video</span><span>›</span></div>
+                <div class="create-option" id="goLiveBtn"><span>◉</span><span>Go live</span><span>›</span></div>
+                <div class="create-option" id="createPostBtn"><span>📝</span><span>Create post</span></div>
+            </div>
+            <div class="notification-container">
+                <button id="notificationBtn" class="notification-btn" type="button">🔔</button>
+                <div id="notificationPopup" class="notification-popup">
+                    <div class="notification-header"><span>Notifications</span><button id="closeNotification" type="button">×</button></div>
+                    <div class="notification-section-title">Important</div>
+                    <div class="notification-item"><div class="notification-avatar">GS</div><div class="notification-text"><p><strong>Awarapan 2 Trailer</strong> uploaded</p><span>15 hours ago</span></div><div class="notification-thumbnail placeholder-thumb">▶</div></div>
+                    <div class="notification-section-title">More notifications</div>
+                    <div class="notification-item"><div class="notification-avatar">Z</div><div class="notification-text"><p><strong>New video available</strong> from your subscriptions</p><span>1 day ago</span></div><div class="notification-thumbnail placeholder-thumb">▶</div></div>
+                </div>
+            </div>
+            <button id="profileBtn" class="profile-btn" type="button" aria-label="Open profile menu">
+                <img src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj" alt="Profile">
+            </button>
+            <div id="profileMenu" class="profile-menu">
+                <div class="profile-header"><img src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj" alt="Profile"><div class="profile-user"><h4>Raunak Rej</h4><p class="profile-email">web.raunakrej275@gmail.com</p></div></div>
+                <a href="/channel">👤 Your Channel</a><a href="/history">📜 History</a><a href="/likedvideos">👍 Liked Videos</a><a href="/settings">⚙ Settings</a><a href="/login" id="logoutBtn">🚪 Sign out</a>
+            </div>
+        </div>
+    </header>
+
+    <aside class="channel-sidebar" aria-label="RTube navigation">
+        <h3>Menu</h3>
+        <ul>
+            <li onclick="location.href='/'">🏠 Home</li>
+            <li onclick="location.href='/?section=trending'">🔥 Trending</li>
+            <li onclick="location.href='/?section=music'">🎵 Music</li>
+            <li onclick="location.href='/?section=home'">🎮 Gaming</li>
+            <li onclick="location.href='/?section=movies'">🎬 Movies</li>
+            <li onclick="location.href='/?section=home'">📚 Education</li>
+            <li onclick="location.href='/?section=home'">⚽ Sports</li>
+            <li onclick="location.href='/?section=home'">📰 News</li>
+            <li onclick="location.href='/watchlater'">💾 Watch Later</li>
+            <li onclick="location.href='/likedvideos'">👍 Liked Videos</li>
+            <li onclick="location.href='/?section=home'">📺 Subscriptions</li>
+            <li onclick="location.href='/downloads'">⬇️ Downloads</li>
+        </ul>
+        <hr>
+        <h3>You</h3>
+        <ul>
+            <li class="active">👤 Your channel</li>
+            <li onclick="location.href='/history'">📜 History</li>
+            <li onclick="location.href='/upload'">📹 Upload</li>
+            <li onclick="location.href='/settings'">⚙ Settings</li>
+        </ul>
+    </aside>
+
+
+    <!-- =========================
+         MAIN CHANNEL PAGE
+    ========================== -->
+
+    <main class="channel-page">
+
+
+        <!-- =========================
+             CHANNEL HERO
+        ========================== -->
+
+        <section class="channel-hero">
+
+            <!-- Channel Banner -->
+
+            <div class="channel-banner">
+
+                <div class="banner-text">
+                    RAUNAK REJ
+                </div>
+
+            </div>
+
+
+            <!-- Channel Information -->
+
+            <div class="channel-info">
+
+                <!-- Avatar -->
+
+                <div class="channel-avatar">
+                    RR
+                </div>
+
+
+                <!-- Details -->
+
+                <div class="channel-details">
+
+                    <h2>Raunak Rej</h2>
+
+                    <p class="handle">
+                        @RaunakRej
+                    </p>
+
+                    <p class="channel-meta">
+                        Web creator • 10 subscribers
+                    </p>
+
+                    <p class="channel-description">
+                        Welcome to my dummy YouTube channel.
+                        Here you can see channel information,
+                        videos and playlists.
+                    </p>
+
+
+                    <!-- Buttons -->
+
+                    <div class="channel-actions">
+
+                        <button class="subscribe-btn">
+                            Subscribe
+                        </button>
+
+                        <button class="action-btn">
+                            🔔
+                        </button>
+
+                        <button class="action-btn">
+                            Share
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             CHANNEL TABS
+        ========================== -->
+
+        <nav class="channel-tabs">
+
+            <button class="tab active">
+                Home
+            </button>
+
+            <button class="tab">
+                Videos
+            </button>
+
+            <button class="tab">
+                Playlists
+            </button>
+
+            <button class="tab">
+                About
+            </button>
+
+        </nav>
+
+
+        <!-- =========================
+             CHANNEL CONTENT
+        ========================== -->
+
+        <section class="channel-content">
+
+
+            <!-- =========================
+                 VIDEOS
+            ========================== -->
+
+            <div class="videos-column">
+
+                <div class="section-heading">
+
+                    <h2>
+                        Channel Videos
+                    </h2>
+
+                    <button class="see-all">
+                        See all
+                    </button>
+
+                </div>
+
+
+                <div class="video-grid">
+
+
+                    <!-- Video 1 -->
+
+                    <article class="channel-video">
+
+                        <div class="thumbnail">
+
+                            <img
+                                src="https://cdn.cinematerial.com/p/297x/iajmjaap/jannat-indian-movie-poster-md.jpg?v=1456298328"
+                                alt="Jannat Full Movie">
+
+                            <span class="duration">
+                                2:15:34
+                            </span>
+
+                        </div>
+
+                        <div class="video-info">
+
+                            <h3>
+                                Jannat Full Movie | Emraan Hashmi
+                            </h3>
+
+                            <p>
+                                T-Series Movies
+                            </p>
+
+                            <span>
+                                25M views • 2 years ago
+                            </span>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Video 2 -->
+
+                    <article class="channel-video">
+
+                        <div class="thumbnail">
+
+                            <img
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS42lvnHL2Hnqnjocbv1Q9vMdhVQEsehl34HcLcrfSHyg&s=10"
+                                alt="Aashiq Banaya Aapne">
+
+                            <span class="duration">
+                                4:32
+                            </span>
+
+                        </div>
+
+                        <div class="video-info">
+
+                            <h3>
+                                Aashiq Banaya Aapne | HD Video Song
+                            </h3>
+
+                            <p>
+                                Bollywood Hits
+                            </p>
+
+                            <span>
+                                120M views • 4 years ago
+                            </span>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Video 3 -->
+
+                    <article class="channel-video">
+
+                        <div class="thumbnail">
+
+                            <img
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvSOC3si4jKR47IV6FprMm03f3dcYL5GoGmZEZQvebmg&s=10"
+                                alt="Murder Best Scenes">
+
+                            <span class="duration">
+                                8:45
+                            </span>
+
+                        </div>
+
+                        <div class="video-info">
+
+                            <h3>
+                                Murder (2004) Best Scenes
+                            </h3>
+
+                            <p>
+                                Movie Clips
+                            </p>
+
+                            <span>
+                                15M views • 1 year ago
+                            </span>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Video 4 -->
+
+                    <article class="channel-video">
+
+                        <div class="thumbnail">
+
+                            <img
+                                src="https://picsum.photos/600/338?random=21"
+                                alt="Hamari Adhuri Kahani">
+
+                            <span class="duration">
+                                3:20
+                            </span>
+
+                        </div>
+
+                        <div class="video-info">
+
+                            <h3>
+                                Hamari Adhuri Kahani | Official Trailer
+                            </h3>
+
+                            <p>
+                                Movie Trailers
+                            </p>
+
+                            <span>
+                                45M views • 5 years ago
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================
+                 ABOUT
+            ========================== -->
+
+            <aside class="about-card">
+
+                <h2>
+                    About
+                </h2>
+
+                <p class="about-description">
+
+                    This is a mock channel page created for
+                    the Dummy YouTube project.
+
+                </p>
+
+
+                <div class="about-row">
+
+                    <span>
+                        👤
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Channel owner
+                        </strong>
+
+                        <p>
+                            Raunak Rej
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="about-row">
+
+                    <span>
+                        👥
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Subscribers
+                        </strong>
+
+                        <p>
+                            10 subscribers
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="about-row">
+
+                    <span>
+                        🎬
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Content
+                        </strong>
+
+                        <p>
+                            Movies, music and entertainment
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </aside>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        <p>
+            © 2026 RTube. This is a dummy webpage created
+            for learning purposes.
+        </p>
+
+    </footer>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <script>
+
+        /* Subscribe Button */
+
+        const subscribeButton =
+            document.querySelector(".subscribe-btn");
+
+        subscribeButton.addEventListener("click", function () {
+
+            this.classList.toggle("subscribed");
+
+            if (this.classList.contains("subscribed")) {
+
+                this.textContent = "Subscribed";
+
+            } else {
+
+                this.textContent = "Subscribe";
+
+            }
+
+        });
+
+
+        /* Channel Tabs */
+
+        const tabs =
+            document.querySelectorAll(".tab");
+
+        tabs.forEach(function (tab) {
+
+            tab.addEventListener("click", function () {
+
+                tabs.forEach(function (item) {
+
+                    item.classList.remove("active");
+
+                });
+
+                this.classList.add("active");
+
+            });
+
+        });
+
+    </script>
+
+    <script src="page-header.js"></script>
+    <script src="global-search.js"></script>
+    <script src="sidebar-toggle.js"></script>
+
+</body>
+
+</html>

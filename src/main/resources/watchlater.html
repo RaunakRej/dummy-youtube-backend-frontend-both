@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Later - Raunak Dummy YouTube</title>
+    <link rel="stylesheet" href="youtube_style.css">
+    <link rel="icon" type="image/png"
+        href="https://www.freepnglogos.com/uploads/youtube-logo-png/youtube-transparent-youtube-icon-download-clipart-with-transparent-25.png">
+    <style>
+        .watch-later-layout {
+            display: grid;
+            grid-template-columns: 330px minmax(0, 1fr);
+            gap: 36px;
+            margin-left: 250px;
+            padding: 32px;
+        }
+
+        .watch-later-sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            width: 250px;
+            height: calc(100vh - 70px);
+            padding: 22px 15px;
+            overflow-y: auto;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            z-index: 20;
+        }
+
+        .watch-later-sidebar h3 {
+            margin: 0 10px 16px;
+        }
+
+        .watch-later-sidebar ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .watch-later-sidebar li {
+            padding: 12px 14px;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .watch-later-sidebar li:hover,
+        .watch-later-sidebar li.active {
+            background: var(--card-hover);
+        }
+
+        .watch-later-sidebar hr {
+            margin: 18px 0;
+        }
+
+        body.sidebar-collapsed .watch-later-sidebar {
+            display: none;
+        }
+
+        body.sidebar-collapsed .watch-later-layout {
+            margin-left: 0;
+        }
+
+        .watch-playlist-card {
+            position: sticky;
+            top: 90px;
+            align-self: start;
+            min-height: 590px;
+            overflow: hidden;
+            color: #ffffff;
+            background: linear-gradient(145deg, #6f4c52, #332a38);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .watch-playlist-card img {
+            width: 100%;
+            height: 230px;
+            object-fit: cover;
+        }
+
+        .watch-playlist-content {
+            padding: 24px;
+        }
+
+        .watch-playlist-content h1 {
+            margin: 0 0 18px;
+            font-size: 30px;
+        }
+
+        .watch-playlist-content h3 {
+            margin-bottom: 12px;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .watch-playlist-content p {
+            margin-top: 8px;
+            color: #e3dce2;
+            font-size: 13px;
+        }
+
+        .watch-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 28px;
+        }
+
+        .watch-actions button,
+        .watch-clear {
+            border: 0;
+            border-radius: 22px;
+            padding: 11px 18px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .watch-actions button {
+            color: #302630;
+            background: #ffffff;
+        }
+
+        .watch-actions .shuffle-button {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .watch-results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .watch-results-header h2 {
+            margin: 0;
+        }
+
+        .watch-clear {
+            color: var(--text);
+            background: var(--button);
+        }
+
+        .watch-video-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .watch-video-row {
+            display: grid !important;
+            grid-template-columns: 24px 190px minmax(0, 1fr) !important;
+            gap: 12px;
+            align-items: center;
+            min-height: 124px;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .watch-video-row:hover {
+            background: var(--card-hover);
+        }
+
+        .watch-video-row .drag-handle {
+            color: var(--secondary-text);
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .watch-video-thumbnail {
+            position: relative;
+            width: 190px;
+            height: 108px;
+            flex: none;
+        }
+
+        .watch-video-thumbnail img {
+            display: block !important;
+            width: 190px !important;
+            min-width: 190px !important;
+            height: 108px !important;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .watch-video-thumbnail span {
+            position: absolute;
+            right: 5px;
+            bottom: 5px;
+            padding: 3px 5px;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .watch-video-info h3 {
+            margin: 0 0 8px !important;
+            color: var(--text) !important;
+            font-size: 17px !important;
+            line-height: 1.3;
+        }
+
+        .watch-video-info p {
+            margin: 5px 0 0 !important;
+            color: var(--secondary-text) !important;
+            font-size: 13px !important;
+            line-height: 1.3;
+        }
+
+        .watch-empty {
+            padding: 70px 20px;
+            color: var(--secondary-text);
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .watch-later-layout {
+                grid-template-columns: 1fr;
+                margin-left: 0;
+            }
+
+            .watch-playlist-card {
+                position: static;
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .watch-later-layout {
+                padding: 18px;
+            }
+
+            .watch-video-row {
+                grid-template-columns: 18px 120px minmax(0, 1fr);
+                gap: 8px;
+            }
+
+            .watch-video-thumbnail img {
+                width: 120px !important;
+                min-width: 120px !important;
+                height: 68px !important;
+            }
+
+            .watch-video-info h3 {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div>
+            <button id="menuBtn" type="button">☰</button>
+            <h2>▶ Raunak Dummy YouTube</h2>
+        </div>
+
+        <div class="search-container">
+            <input id="searchInput" type="text" placeholder="Search videos...">
+            <button id="searchBtn" type="button">Search</button>
+        </div>
+
+        <div class="header-right">
+            <button id="createBtn" class="create-btn" type="button" aria-label="Create">📹</button>
+            <div id="createMenu" class="create-menu">
+                <div class="create-option" id="uploadVideoBtn"><span>▣</span><span>Upload video</span><span>›</span></div>
+                <div class="create-option" id="goLiveBtn"><span>◉</span><span>Go live</span><span>›</span></div>
+                <div class="create-option" id="createPostBtn"><span>📝</span><span>Create post</span></div>
+            </div>
+            <div class="notification-container">
+                <button id="notificationBtn" class="notification-btn" type="button" aria-label="Notifications">🔔</button>
+                <div id="notificationPopup" class="notification-popup">
+                    <div class="notification-header"><span>Notifications</span><button id="closeNotification" type="button">×</button></div>
+                    <div class="notification-section-title">Important</div>
+                    <div class="notification-item"><div class="notification-avatar">GS</div><div class="notification-text"><p><strong>Awarapan 2 Trailer</strong> uploaded</p><span>15 hours ago</span></div><div class="notification-thumbnail placeholder-thumb">▶</div></div>
+                    <div class="notification-section-title">More notifications</div>
+                    <div class="notification-item"><div class="notification-avatar">Z</div><div class="notification-text"><p><strong>New video available</strong> from your subscriptions</p><span>1 day ago</span></div><div class="notification-thumbnail placeholder-thumb">▶</div></div>
+                </div>
+            </div>
+            <button id="profileBtn" class="profile-btn" type="button" aria-label="Open profile menu">
+                <img src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj"
+                    alt="Profile">
+            </button>
+            <div id="profileMenu" class="profile-menu">
+                <div class="profile-header">
+                    <img src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj"
+                        alt="Profile">
+                    <div class="profile-user">
+                        <h4 id="profileUsername">Raunak Rej</h4>
+                        <p id="profileEmail" class="profile-email">web.raunakrej275@gmail.com</p>
+                    </div>
+                </div>
+                <a href="/">🏠 Home</a>
+                <a href="/channel">👤 Your Channel</a>
+                <a href="/history">📜 History</a>
+                <a href="/likedvideos">👍 Liked Videos</a>
+                <a href="/settings">⚙ Settings</a>
+                <a href="/login" id="logoutBtn">🚪 Sign out</a>
+            </div>
+        </div>
+    </header>
+
+        <aside class="watch-later-sidebar" aria-label="RTube navigation">
+            <h3>Menu</h3>
+            <ul>
+                <li onclick="window.location.href='/'">🏠 Home</li>
+                <li onclick="window.location.href='/?section=trending'">🔥 Trending</li>
+                <li onclick="window.location.href='/?section=music'">🎵 Music</li>
+                <li onclick="window.location.href='/?section=home'">🎮 Gaming</li>
+                <li onclick="window.location.href='/?section=movies'">🎬 Movies</li>
+                <li onclick="window.location.href='/?section=home'">📚 Education</li>
+                <li onclick="window.location.href='/?section=home'">⚽ Sports</li>
+                <li onclick="window.location.href='/?section=home'">📰 News</li>
+                <li onclick="window.location.href='/watchlater'" class="active">💾 Watch Later</li>
+                <li onclick="window.location.href='/likedvideos'">👍 Liked Videos</li>
+                <li onclick="window.location.href='/?section=home'">📺 Subscriptions</li>
+                <li onclick="window.location.href='/downloads'">⬇️ Downloads</li>
+            </ul>
+            <hr>
+            <h3>You</h3>
+            <ul>
+                <li onclick="window.location.href='/channel'">👤 Your channel</li>
+                <li onclick="window.location.href='/history'">📜 History</li>
+                <li onclick="window.location.href='/upload'">📹 Upload</li>
+                <li onclick="window.location.href='/settings'">⚙ Settings</li>
+            </ul>
+        </aside>
+
+        <main class="watch-later-layout">
+        <section class="watch-playlist-card">
+            <img src="/images/default-thumbnail.jpg" alt="Watch Later playlist">
+            <div class="watch-playlist-content">
+                <h1>Watch Later</h1>
+                <h3>RAUNAK REJ</h3>
+                <p><span id="playlistCount">0</span> videos • No views</p>
+                <p>Videos loaded from the RTube API</p>
+                <div class="watch-actions">
+                    <button id="playAllBtn" type="button">▶ Play all</button>
+                    <button id="shuffleBtn" class="shuffle-button" type="button">🔀 Shuffle</button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="watch-results-header">
+                <h2><span id="videoCount">0</span> videos</h2>
+                <button id="clearBtn" class="watch-clear" type="button">Clear all</button>
+            </div>
+            <div id="watchVideoList" class="watch-video-list" aria-live="polite"></div>
+            <div id="watchEmpty" class="watch-empty" hidden>
+                <h2>No videos found</h2>
+                <p>The video API did not return any Watch Later videos.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="watchlater.js"></script>
+    <script src="global-search.js"></script>
+    <script src="sidebar-toggle.js"></script>
+</body>
+
+</html>
