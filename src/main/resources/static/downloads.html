@@ -27,7 +27,7 @@
 
         <div class="header-left">
 
-            <a href="index.html" class="logo">
+            <a href="/" class="logo">
                 ▶ RTube
             </a>
 
@@ -208,10 +208,8 @@
 
             if (searchValue !== "") {
 
-                alert(
-                    "Searching for: " +
-                    searchValue
-                );
+                window.location.href =
+                    "/?search=" + encodeURIComponent(searchValue);
 
             }
 

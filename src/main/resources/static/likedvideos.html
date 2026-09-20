@@ -14,6 +14,92 @@
         href="https://www.freepnglogos.com/uploads/youtube-logo-png/youtube-transparent-youtube-icon-download-clipart-with-transparent-25.png">
 
     <style>
+        .liked-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            min-height: 70px;
+            padding: 12px 20px;
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .liked-header h2 {
+            color: #f00;
+            white-space: nowrap;
+        }
+
+        .liked-search {
+            display: flex;
+            flex: 1;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .liked-search input {
+            width: 100%;
+            height: 40px;
+            padding: 0 18px;
+            border: 1px solid #ccc;
+            border-radius: 22px 0 0 22px;
+        }
+
+        .liked-search button {
+            width: 48px;
+            border: 1px solid #ccc;
+            border-left: 0;
+            border-radius: 0 22px 22px 0;
+            cursor: pointer;
+        }
+
+        .liked-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .liked-sidebar {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            width: 230px;
+            height: calc(100vh - 70px);
+            padding: 18px 12px;
+            overflow-y: auto;
+            background: #fff;
+            border-right: 1px solid #e5e5e5;
+            z-index: 20;
+        }
+
+        .liked-sidebar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .liked-sidebar li {
+            padding: 11px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+        }
+
+        .liked-sidebar li:hover,
+        .liked-sidebar li.active {
+            background: #f2f2f2;
+        }
+
+        body.sidebar-collapsed .liked-sidebar {
+            display: none;
+        }
+
+        body.sidebar-collapsed .liked-container {
+            margin-left: 0;
+        }
+
         /* =====================================================
            BODY
         ===================================================== */
@@ -33,6 +119,7 @@
             display: flex;
             padding: 25px;
             gap: 35px;
+            margin-left: 230px;
         }
 
 
@@ -449,6 +536,91 @@
 
 <body>
 
+    <header class="liked-header">
+        <button id="menuBtn" type="button" aria-label="Collapse navigation">☰</button>
+        <h2>▶ Raunak Dummy YouTube</h2>
+        <div class="liked-search">
+            <input id="searchInput" type="text" placeholder="Search videos..." aria-label="Search videos">
+            <button id="searchBtn" type="button">🔍</button>
+        </div>
+        <div class="header-right">
+            <button id="createBtn" class="create-btn" type="button" aria-label="Create">📹</button>
+            <div id="createMenu" class="create-menu">
+                <div class="create-option" id="uploadVideoBtn"><span>▣</span><span>Upload video</span><span>›</span></div>
+                <div class="create-option" id="goLiveBtn"><span>◉</span><span>Go live</span><span>›</span></div>
+                <div class="create-option" id="createPostBtn"><span>📝</span><span>Create post</span></div>
+            </div>
+            <div class="notification-container">
+                <button id="notificationBtn" class="notification-btn" type="button" aria-label="Notifications">🔔</button>
+                <div id="notificationPopup" class="notification-popup">
+                    <div class="notification-header">
+                        <span>Notifications</span>
+                        <button id="closeNotification" type="button" aria-label="Close notifications">×</button>
+                    </div>
+                    <div class="notification-section-title">Important</div>
+                    <div class="notification-item">
+                        <div class="notification-avatar">GS</div>
+                        <div class="notification-text">
+                            <p><strong>Awarapan 2 Trailer</strong> uploaded</p>
+                            <span>15 hours ago</span>
+                        </div>
+                        <div class="notification-thumbnail placeholder-thumb">▶</div>
+                    </div>
+                    <div class="notification-section-title">More notifications</div>
+                    <div class="notification-item">
+                        <div class="notification-avatar">Z</div>
+                        <div class="notification-text">
+                            <p><strong>New video available</strong> from your subscriptions</p>
+                            <span>1 day ago</span>
+                        </div>
+                        <div class="notification-thumbnail placeholder-thumb">▶</div>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-container">
+                <button id="profileBtn" class="profile-btn" type="button" aria-label="Open profile menu">
+                    <img src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj" alt="Profile">
+                </button>
+                <div id="profileMenu" class="profile-menu">
+                    <div class="profile-header">
+                        <img src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj" alt="Profile">
+                        <div class="profile-user">
+                            <h4 id="profileUsername">Raunak Rej</h4>
+                            <p id="profileEmail" class="profile-email">web.raunakrej275@gmail.com</p>
+                        </div>
+                    </div>
+                    <a href="/">🏠 Home</a>
+                    <a href="/channel">👤 Your Channel</a>
+                    <a href="/history">📜 History</a>
+                    <a href="/likedvideos">👍 Liked Videos</a>
+                    <a href="/settings">⚙ Settings</a>
+                    <a href="/login" id="logoutBtn">🚪 Sign out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside class="liked-sidebar" aria-label="RTube navigation">
+        <ul>
+            <li onclick="location.href='/'">🏠 Home</li>
+            <li onclick="location.href='/?section=trending'">🔥 Trending</li>
+            <li onclick="location.href='/?section=music'">🎵 Music</li>
+            <li onclick="location.href='/?section=home'">🎮 Gaming</li>
+            <li onclick="location.href='/?section=movies'">🎬 Movies</li>
+            <li onclick="location.href='/?section=home'">📚 Education</li>
+            <li onclick="location.href='/?section=home'">⚽ Sports</li>
+            <li onclick="location.href='/?section=home'">📰 News</li>
+            <li onclick="location.href='/watchlater'">💾 Watch Later</li>
+            <li class="active">👍 Liked Videos</li>
+            <li onclick="location.href='/?section=home'">📺 Subscriptions</li>
+            <li onclick="location.href='/downloads'">⬇️ Downloads</li>
+            <li onclick="location.href='/channel'">👤 Your channel</li>
+            <li onclick="location.href='/history'">📜 History</li>
+            <li onclick="location.href='/upload'">📹 Upload</li>
+            <li onclick="location.href='/settings'">⚙ Settings</li>
+        </ul>
+    </aside>
+
 
     <!-- =====================================================
          MAIN LIKED VIDEOS CONTAINER
@@ -556,6 +728,9 @@
          JAVASCRIPT
     ===================================================== -->
 
+    <script src="global-search.js"></script>
+    <script src="page-header.js"></script>
+    <script src="sidebar-toggle.js"></script>
     <script>
 
 
@@ -932,7 +1107,7 @@
 
 
                             window.open(
-                                "video.html?id="
+                                "/video?id="
                                 + encodeURIComponent(
                                     video.id
                                 ),
@@ -1151,7 +1326,7 @@
 
 
                     window.open(
-                        "video.html?id="
+                        "/video?id="
                         + encodeURIComponent(
                             firstVideo.id
                         ),
@@ -1206,7 +1381,7 @@
 
 
                     window.open(
-                        "video.html?id="
+                        "/video?id="
                         + encodeURIComponent(
                             randomVideo.id
                         ),
@@ -1234,7 +1409,7 @@
                 /*
                  * Read the latest localStorage value.
                  * This ensures the count is updated if the
-                 * user liked/unliked a video on video.html
+                 * user liked/unliked a video on the video page
                  * and then returned here.
                  */
 

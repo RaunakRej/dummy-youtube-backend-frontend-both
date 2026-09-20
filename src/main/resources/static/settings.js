@@ -708,7 +708,7 @@ homeBtn.addEventListener(
     function () {
 
         window.location.href =
-            "youtube_mainhtml.html";
+            "/";
 
     }
 );

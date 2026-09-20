@@ -17,6 +17,16 @@
 --red: #ff0000;
 }
 
+body.dark-mode {
+--background: #0f0f0f;
+--surface: #202020;
+--text: #ffffff;
+--secondary-text: #aaaaaa;
+--border: #3c3c3c;
+--hover: #2f2f2f;
+--active: #404040;
+}
+
 body {
 background: var(--background);
 color: var(--text);
@@ -89,6 +99,49 @@ object-fit: cover;
 flex-shrink: 0;
 }
 
+.settings-profile-btn {
+border: none;
+background: transparent;
+padding: 0;
+cursor: pointer;
+border-radius: 50%;
+}
+
+.settings-profile-btn:focus-visible {
+outline: 2px solid var(--blue);
+outline-offset: 3px;
+}
+
+.settings-profile-menu {
+position: absolute;
+top: 62px;
+right: 25px;
+display: none;
+width: 220px;
+padding: 16px;
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: 12px;
+box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+z-index: 200;
+}
+
+.settings-profile-menu.is-open {
+display: grid;
+gap: 8px;
+}
+
+.settings-profile-menu span {
+color: var(--secondary-text);
+font-size: 12px;
+}
+
+.settings-profile-menu a {
+color: var(--blue);
+text-decoration: none;
+font-size: 14px;
+}
+
 .container {
 display: flex;
 align-items: flex-start;
@@ -101,6 +154,14 @@ min-height: calc(100vh - 70px);
 border-right: 1px solid var(--border);
 padding: 25px 20px;
 background: var(--surface);
+}
+
+body.sidebar-collapsed aside {
+display: none;
+}
+
+body.sidebar-collapsed main {
+width: 100%;
 }
 
 aside h2 {

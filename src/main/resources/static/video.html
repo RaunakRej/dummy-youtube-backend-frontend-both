@@ -1,37 +1,155 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Video Player</title>
 
-    <style>
-        body {
-            background: #181818;
-            color: white;
-            font-family: Arial;
-            margin: 30px;
-        }
-
-        iframe {
-            width: 1000px;
-            height: 560px;
-            border: none;
-        }
-    </style>
+    <!-- Keep your existing <style>...</style> here -->
 
 </head>
 
 <body>
 
-    <h1 id="title"></h1>
+    <div class="video-container">
 
-    <iframe id="player" allowfullscreen></iframe>
+        <div class="player-container">
+
+            <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen>
+            </iframe>
+
+        </div>
+
+        <div class="video-info">
+
+            <h1 id="title">Loading video...</h1>
+
+            <div class="video-meta">
+
+                <span id="views"></span>
+
+                <span> • </span>
+
+                <span id="uploaded"></span>
+
+            </div>
+
+            <div class="video-actions">
+
+                <button id="likeBtn">
+                    👍 Like
+                </button>
+
+                <button id="shareBtn">
+                    ↗ Share
+                </button>
+
+                <button id="saveBtn">
+                    💾 Save
+                </button>
+
+            </div>
+
+            <div class="channel-section">
+
+                <div class="channel-avatar">
+                    👤
+                </div>
+
+                <div>
+                    <div id="channel" class="channel-name"></div>
+                </div>
+
+                <button id="subscribeBtn" class="subscribe-btn">
+                    Subscribe
+                </button>
+
+            </div>
+
+            <div id="description" class="description">
+                Loading description...
+            </div>
+
+        </div>
+
+        <section class="comments-section">
+
+            <div class="comments-header">
+
+                <h2>
+                    Comments
+                    <span id="commentCount">
+                        0
+                    </span>
+                </h2>
+
+            </div>
+
+            <div class="comment-input-container">
+
+                <div class="comment-avatar">
+                    👤
+                </div>
+
+                <div class="comment-input-area">
+
+                    <textarea id="commentInput" placeholder="Add a comment..." maxlength="500">
+                    </textarea>
+
+                    <div class="comment-actions">
+
+                        <button id="cancelCommentBtn" class="cancel-comment">
+                            Cancel
+                        </button>
+
+                        <button id="postCommentBtn" class="post-comment">
+                            Comment
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="comment-sort">
+
+                <button id="sortCommentsBtn">
+                    ↕ Sort by
+                </button>
+
+                <div id="sortCommentsMenu" class="sort-menu">
+
+                    <button data-sort="top">
+                        Top comments
+                    </button>
+
+                    <button data-sort="newest">
+                        Newest first
+                    </button>
+
+                    <button data-sort="oldest">
+                        Oldest first
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="commentsContainer">
+            </div>
+
+        </section>
+
+    </div>
 
     <script src="video.js"></script>
 
 </body>
 
 </html>
+```

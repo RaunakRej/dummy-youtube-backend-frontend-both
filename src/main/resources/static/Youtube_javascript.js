@@ -26,6 +26,12 @@ const WATCH_HISTORY_KEY = "watchHistory";
 const WATCH_HISTORY_PAUSED_KEY = "watchHistoryPaused";
 
 // =====================================================
+// DEFAULT THUMBNAIL
+// =====================================================
+
+const DEFAULT_THUMBNAIL = "/images/default-thumbnail.jpg";
+
+// =====================================================
 // DOM ELEMENTS
 // =====================================================
 
@@ -39,44 +45,77 @@ const clearBtn = document.getElementById("clearBtn");
 // =====================================================
 
 function getWatchHistory() {
-  try {
-    return JSON.parse(localStorage.getItem(WATCH_HISTORY_KEY)) || [];
-  } catch (error) {
-    console.error("Error reading watch history:", error);
-    return [];
-  }
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(WATCH_HISTORY_KEY)
+        ) || [];
+
+    } catch (error) {
+
+        console.error(
+            "Error reading watch history:",
+            error
+        );
+
+        return [];
+    }
 }
+
 
 function saveWatchHistory(history) {
-  try {
-    localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
-  } catch (error) {
-    console.error("Error saving watch history:", error);
-  }
+
+    try {
+
+        localStorage.setItem(
+            WATCH_HISTORY_KEY,
+            JSON.stringify(history)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error saving watch history:",
+            error
+        );
+    }
 }
 
+
 function addToWatchHistory(videoId) {
-  if (localStorage.getItem(WATCH_HISTORY_PAUSED_KEY) === "true") {
-    console.log("Watch history is paused.");
-    return;
-  }
 
-  let history = getWatchHistory();
+    if (
+        localStorage.getItem(
+            WATCH_HISTORY_PAUSED_KEY
+        ) === "true"
+    ) {
 
-  videoId = String(videoId);
+        console.log(
+            "Watch history is paused."
+        );
 
-  // Remove duplicate
-  history = history.filter((id) => String(id) !== videoId);
+        return;
+    }
 
-  // Add newest video at beginning
-  history.unshift(videoId);
+    let history = getWatchHistory();
 
-  // Maximum 100 history records
-  history = history.slice(0, 100);
+    videoId = String(videoId);
 
-  saveWatchHistory(history);
+    history = history.filter(
+        (id) => String(id) !== videoId
+    );
 
-  console.log("Watch history updated:", history);
+    history.unshift(videoId);
+
+    history = history.slice(0, 100);
+
+    saveWatchHistory(history);
+
+    console.log(
+        "Watch history updated:",
+        history
+    );
 }
 
 // =====================================================
@@ -84,43 +123,79 @@ function addToWatchHistory(videoId) {
 // =====================================================
 
 function getLikedVideoIds() {
-  try {
-    return JSON.parse(localStorage.getItem(LIKED_VIDEOS_KEY)) || [];
-  } catch (error) {
-    console.error("Error reading liked videos:", error);
 
-    return [];
-  }
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(
+                LIKED_VIDEOS_KEY
+            )
+        ) || [];
+
+    } catch (error) {
+
+        console.error(
+            "Error reading liked videos:",
+            error
+        );
+
+        return [];
+    }
 }
+
 
 function saveLikedVideoIds(ids) {
-  try {
-    localStorage.setItem(LIKED_VIDEOS_KEY, JSON.stringify(ids));
-  } catch (error) {
-    console.error("Error saving liked videos:", error);
-  }
+
+    try {
+
+        localStorage.setItem(
+            LIKED_VIDEOS_KEY,
+            JSON.stringify(ids)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error saving liked videos:",
+            error
+        );
+    }
 }
 
+
 function updateLikedVideosCount() {
-  const likedVideoIds = getLikedVideoIds();
-  const count = likedVideoIds.length;
 
-  const countElements = [
-    "likedVideosCount",
-    "likedVideoCount",
-    "liked-count",
-    "likedCount",
-  ];
+    const likedVideoIds =
+        getLikedVideoIds();
 
-  countElements.forEach((id) => {
-    const element = document.getElementById(id);
+    const count =
+        likedVideoIds.length;
 
-    if (element) {
-      element.textContent = count;
-    }
-  });
+    const countElements = [
 
-  console.log("Liked videos count:", count);
+        "likedVideosCount",
+        "likedVideoCount",
+        "liked-count",
+        "likedCount",
+        "likedVideosCountProfile"
+
+    ];
+
+    countElements.forEach((id) => {
+
+        const element =
+            document.getElementById(id);
+
+        if (element) {
+
+            element.textContent = count;
+        }
+    });
+
+    console.log(
+        "Liked videos count:",
+        count
+    );
 }
 
 // =====================================================
@@ -128,7 +203,11 @@ function updateLikedVideosCount() {
 // =====================================================
 
 function getVideoById(id) {
-  return videos.find((video) => String(video.id) === String(id));
+
+    return videos.find(
+        (video) =>
+            String(video.id) === String(id)
+    );
 }
 
 // =====================================================
@@ -136,59 +215,102 @@ function getVideoById(id) {
 // =====================================================
 
 async function loadVideosFromAPI() {
-  console.log("Fetching videos from Spring Boot API...");
 
-  if (spinner) {
-    spinner.style.display = "block";
-  }
+    console.log(
+        "Fetching videos from Spring Boot API..."
+    );
 
-  try {
-    const response = await fetch(API_URL);
-
-    console.log("API response status:", response.status);
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    console.log("Videos received from API:", data);
-
-    if (!Array.isArray(data)) {
-      throw new Error("API response is not an array.");
-    }
-
-    videos = data;
-
-    // =================================================
-    // RESTORE LIKE STATUS
-    // =================================================
-
-    const likedVideoIds = getLikedVideoIds();
-
-    videos.forEach((video) => {
-      video.liked = likedVideoIds.includes(String(video.id));
-    });
-
-    updateLikedVideosCount();
-
-    // =================================================
-    // RENDER VIDEOS
-    // =================================================
-
-    console.log("Calling renderVideos()...");
-
-    renderVideos();
-  } catch (error) {
-    console.error("Error loading videos:", error);
-
-    showAPIError("Unable to load videos from server.");
-  } finally {
     if (spinner) {
-      spinner.style.display = "none";
+
+        spinner.style.display = "block";
     }
-  }
+
+    try {
+
+        const response =
+            await fetch(API_URL);
+
+        console.log(
+            "API response status:",
+            response.status
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `API request failed: ${response.status}`
+            );
+        }
+
+        const data =
+            await response.json();
+
+        console.log(
+            "Videos received from API:",
+            data
+        );
+
+        if (!Array.isArray(data)) {
+
+            throw new Error(
+                "API response is not an array."
+            );
+        }
+
+        videos = data;
+
+        // Restore like status
+        const likedVideoIds =
+            getLikedVideoIds();
+
+        videos.forEach((video) => {
+
+            video.liked =
+                likedVideoIds.includes(
+                    String(video.id)
+                );
+        });
+
+        updateLikedVideosCount();
+
+        console.log(
+            "Calling renderVideos()..."
+        );
+
+        renderVideos();
+
+        const requestedSection =
+            new URLSearchParams(window.location.search).get("section");
+
+        const sectionId =
+            requestedSection === "trending"
+                ? "trending-section"
+                : requestedSection === "music"
+                    ? "music-section"
+                    : requestedSection === "movies"
+                        ? "movies"
+                        : "recommended-section";
+
+        showOnlySection(sectionId);
+
+    } catch (error) {
+
+        console.error(
+            "Error loading videos:",
+            error
+        );
+
+        showAPIError(
+            "Unable to load videos from server."
+        );
+
+    } finally {
+
+        if (spinner) {
+
+            spinner.style.display = "none";
+        }
+    }
 }
 
 // =====================================================
@@ -196,29 +318,82 @@ async function loadVideosFromAPI() {
 // =====================================================
 
 function showAPIError(message) {
-  console.error(message);
 
-  const containers = [
-    document.getElementById("recommendedVideos"),
-    document.getElementById("trendingVideos"),
-    document.getElementById("musicVideos"),
-    document.getElementById("movieVideos"),
-  ];
+    console.error(message);
 
-  containers.forEach((container) => {
-    if (container) {
-      container.innerHTML = `
+    const containers = [
+
+        document.getElementById(
+            "recommendedVideos"
+        ),
+
+        document.getElementById(
+            "trendingVideos"
+        ),
+
+        document.getElementById(
+            "musicVideos"
+        ),
+
+        document.getElementById(
+            "movieVideos"
+        )
+    ];
+
+    containers.forEach((container) => {
+
+        if (container) {
+
+            container.innerHTML = `
+
                 <div style="
                     padding:20px;
                     text-align:center;
                     color:#ff4444;
                     font-size:16px;
                 ">
+
                     ${message}
+
                 </div>
+
             `;
+        }
+    });
+}
+
+// =====================================================
+// SAFE THUMBNAIL
+// =====================================================
+
+function getSafeThumbnail(video) {
+
+    if (!video) {
+
+        return DEFAULT_THUMBNAIL;
     }
-  });
+
+    const thumbnail =
+        String(
+            video.thumbnail || ""
+        ).trim();
+
+    if (!thumbnail) {
+
+        return DEFAULT_THUMBNAIL;
+    }
+
+    // Reject all placeholder URLs
+    if (
+        thumbnail.toLowerCase().includes(
+            "placeholder"
+        )
+    ) {
+
+        return DEFAULT_THUMBNAIL;
+    }
+
+    return thumbnail;
 }
 
 // =====================================================
@@ -226,30 +401,39 @@ function showAPIError(message) {
 // =====================================================
 
 function createVideoCard(video) {
-  const isLiked = video.liked === true;
 
-  // ---------------------------------------------
-  // Thumbnail
-  // ---------------------------------------------
+    const isLiked =
+        video.liked === true;
 
-  const fallbackThumbnail = "https://via.placeholder.com/300x170?text=RTube";
+    const thumbnail =
+        getSafeThumbnail(video);
 
-  const thumbnail =
-    video.thumbnail && String(video.thumbnail).trim() !== ""
-      ? video.thumbnail
-      : fallbackThumbnail;
+    const category =
+        video.category ||
+        "Recommended";
 
-  // ---------------------------------------------
-  // Category
-  // ---------------------------------------------
+    const title =
+        video.title ||
+        "Untitled Video";
 
-  const category = video.category || "Recommended";
+    const channel =
+        video.channel ||
+        "Unknown Channel";
 
-  // ---------------------------------------------
-  // Create HTML
-  // ---------------------------------------------
+    const views =
+        video.views ||
+        "0 views";
 
-  return `
+    const uploaded =
+        video.uploaded ||
+        "";
+
+    const duration =
+        video.duration ||
+        "";
+
+    return `
+
         <div class="video-card">
 
             <article
@@ -261,35 +445,35 @@ function createVideoCard(video) {
 
                     <img
                         src="${thumbnail}"
-                        alt="${video.title || "Video"}"
+                        alt="${title}"
                         loading="lazy"
                         onerror="
-                            if (this.src !== '${fallbackThumbnail}') {
-                                this.src='${fallbackThumbnail}';
-                            }
+                            this.onerror=null;
+                            this.src='${DEFAULT_THUMBNAIL}';
                         "
                     >
 
                     <span class="dur">
-                        ${video.duration || ""}
+                        ${duration}
                     </span>
 
                 </div>
 
+
                 <div class="video-info">
 
                     <h3>
-                        ${video.title || "Untitled Video"}
+                        ${title}
                     </h3>
 
                     <p>
-                        ${video.channel || "Unknown Channel"}
+                        ${channel}
                     </p>
 
                     <p>
-                        ${video.views || "0 views"}
+                        ${views}
                         •
-                        ${video.uploaded || ""}
+                        ${uploaded}
                     </p>
 
                     <p class="video-category">
@@ -309,7 +493,25 @@ function createVideoCard(video) {
             </article>
 
         </div>
+
     `;
+}
+
+// =====================================================
+// GET NORMALIZED CATEGORY
+// =====================================================
+
+function getVideoCategory(video) {
+
+    const rawCategory =
+        video.category ||
+        video.videoCategory ||
+        video.type ||
+        "recommended";
+
+    return String(rawCategory)
+        .trim()
+        .toLowerCase();
 }
 
 // =====================================================
@@ -317,172 +519,244 @@ function createVideoCard(video) {
 // =====================================================
 
 function renderVideos() {
-  console.log("=================================");
-  console.log("renderVideos() called");
-  console.log("Total videos:", videos.length);
-  console.log("=================================");
 
-  // ---------------------------------------------
-  // Get containers
-  // ---------------------------------------------
+    console.log("=================================");
+    console.log("renderVideos() called");
+    console.log("Total videos:", videos.length);
+    console.log("=================================");
 
-  const recommendedContainer = document.getElementById("recommendedVideos");
+    const recommendedContainer =
+        document.getElementById(
+            "recommendedVideos"
+        );
 
-  const trendingContainer = document.getElementById("trendingVideos");
+    const trendingContainer =
+        document.getElementById(
+            "trendingVideos"
+        );
 
-  const musicContainer = document.getElementById("musicVideos");
+    const musicContainer =
+        document.getElementById(
+            "musicVideos"
+        );
 
-  const movieContainer = document.getElementById("movieVideos");
+    const movieContainer =
+        document.getElementById(
+            "movieVideos"
+        );
 
-  console.log("recommendedVideos:", recommendedContainer);
-
-  console.log("trendingVideos:", trendingContainer);
-
-  console.log("musicVideos:", musicContainer);
-
-  console.log("movieVideos:", movieContainer);
-
-  // ---------------------------------------------
-  // Clear containers if available
-  // ---------------------------------------------
-
-  if (recommendedContainer) {
-    recommendedContainer.innerHTML = "";
-  }
-
-  if (trendingContainer) {
-    trendingContainer.innerHTML = "";
-  }
-
-  if (musicContainer) {
-    musicContainer.innerHTML = "";
-  }
-
-  if (movieContainer) {
-    movieContainer.innerHTML = "";
-  }
-
-  // ---------------------------------------------
-  // Check if videos exist
-  // ---------------------------------------------
-
-  if (!videos || videos.length === 0) {
-    console.warn("No videos available for rendering.");
+    // Clear containers
 
     if (recommendedContainer) {
-      recommendedContainer.innerHTML = `
+
+        recommendedContainer.innerHTML = "";
+    }
+
+    if (trendingContainer) {
+
+        trendingContainer.innerHTML = "";
+    }
+
+    if (musicContainer) {
+
+        musicContainer.innerHTML = "";
+    }
+
+    if (movieContainer) {
+
+        movieContainer.innerHTML = "";
+    }
+
+    if (!videos || videos.length === 0) {
+
+        console.warn(
+            "No videos available."
+        );
+
+        if (recommendedContainer) {
+
+            recommendedContainer.innerHTML = `
+
                 <div style="
                     padding:30px;
                     text-align:center;
                     font-size:18px;
                 ">
+
                     No videos found.
+
                 </div>
+
             `;
+        }
+
+        return;
     }
 
-    return;
-  }
+    // =================================================
+    // RENDER ALL VIDEOS
+    // =================================================
 
-  // ---------------------------------------------
-  // Render every video
-  // ---------------------------------------------
+    videos.forEach((video) => {
 
-  videos.forEach((video) => {
-    const category = String(video.category || "recommended")
-      .trim()
-      .toLowerCase();
+        const category =
+            getVideoCategory(video);
+
+        console.log(
+            "VIDEO:",
+            video.id,
+            "| TITLE:",
+            video.title,
+            "| CATEGORY:",
+            category
+        );
+
+        const card =
+            createVideoCard(video);
+
+        // =================================================
+        // TRENDING
+        // =================================================
+
+        if (
+            category === "trending" ||
+            category.includes("trending")
+        ) {
+
+            console.log(
+                " -> TRENDING:",
+                video.title
+            );
+
+            if (trendingContainer) {
+
+                trendingContainer.insertAdjacentHTML(
+                    "beforeend",
+                    card
+                );
+            }
+
+        }
+
+        // =================================================
+        // MUSIC
+        // =================================================
+
+        else if (
+            category === "music" ||
+            category === "song" ||
+            category === "songs" ||
+            category.includes("music") ||
+            category.includes("song")
+        ) {
+
+            console.log(
+                " -> MUSIC:",
+                video.title
+            );
+
+            if (musicContainer) {
+
+                musicContainer.insertAdjacentHTML(
+                    "beforeend",
+                    card
+                );
+            }
+
+        }
+
+        // =================================================
+        // MOVIES
+        // =================================================
+
+        else if (
+            category === "movie" ||
+            category === "movies" ||
+            category === "film" ||
+            category === "films" ||
+            category.includes("movie") ||
+            category.includes("film")
+        ) {
+
+            console.log(
+                " -> MOVIES:",
+                video.title
+            );
+
+            if (movieContainer) {
+
+                movieContainer.insertAdjacentHTML(
+                    "beforeend",
+                    card
+                );
+            }
+
+        }
+
+        // =================================================
+        // RECOMMENDED / HOME
+        // =================================================
+
+        else {
+
+            console.log(
+                " -> RECOMMENDED:",
+                video.title
+            );
+
+            if (recommendedContainer) {
+
+                recommendedContainer.insertAdjacentHTML(
+                    "beforeend",
+                    card
+                );
+            }
+        }
+
+    });
+
+    attachVideoEvents();
+
+    updateLikedVideosCount();
 
     console.log(
-      "Rendering video:",
-      video.id,
-      video.title,
-      "Category:",
-      category,
+        "Recommended cards:",
+        recommendedContainer
+            ? recommendedContainer.children.length
+            : 0
     );
 
-    const card = createVideoCard(video);
+    console.log(
+        "Trending cards:",
+        trendingContainer
+            ? trendingContainer.children.length
+            : 0
+    );
 
-    // -----------------------------------------
-    // Trending
-    // -----------------------------------------
+    console.log(
+        "Music cards:",
+        musicContainer
+            ? musicContainer.children.length
+            : 0
+    );
 
-    if (category.includes("trending")) {
-      if (trendingContainer) {
-        trendingContainer.insertAdjacentHTML("beforeend", card);
-      }
-    }
+    console.log(
+        "Movie cards:",
+        movieContainer
+            ? movieContainer.children.length
+            : 0
+    );
 
-    // -----------------------------------------
-    // Music
-    // -----------------------------------------
-    else if (category.includes("music") || category.includes("song")) {
-      if (musicContainer) {
-        musicContainer.insertAdjacentHTML("beforeend", card);
-      }
-    }
+    console.log(
+        "Total video cards:",
+        document.querySelectorAll(
+            ".video-card"
+        ).length
+    );
 
-    // -----------------------------------------
-    // Movies
-    // -----------------------------------------
-    else if (category.includes("movie") || category.includes("film")) {
-      if (movieContainer) {
-        movieContainer.insertAdjacentHTML("beforeend", card);
-      }
-    }
-
-    // -----------------------------------------
-    // Recommended
-    // -----------------------------------------
-    else {
-      if (recommendedContainer) {
-        recommendedContainer.insertAdjacentHTML("beforeend", card);
-      }
-    }
-  });
-
-  // ---------------------------------------------
-  // Attach events
-  // ---------------------------------------------
-
-  attachVideoEvents();
-
-  // ---------------------------------------------
-  // Update liked count
-  // ---------------------------------------------
-
-  updateLikedVideosCount();
-
-  // ---------------------------------------------
-  // Debug information
-  // ---------------------------------------------
-
-  console.log(
-    "Recommended cards:",
-    recommendedContainer ? recommendedContainer.children.length : 0,
-  );
-
-  console.log(
-    "Trending cards:",
-    trendingContainer ? trendingContainer.children.length : 0,
-  );
-
-  console.log(
-    "Music cards:",
-    musicContainer ? musicContainer.children.length : 0,
-  );
-
-  console.log(
-    "Movie cards:",
-    movieContainer ? movieContainer.children.length : 0,
-  );
-
-  console.log(
-    "Total video cards:",
-    document.querySelectorAll(".video-card").length,
-  );
-
-  console.log("Video rendering completed.");
+    console.log(
+        "Video rendering completed."
+    );
 }
 
 // =====================================================
@@ -490,133 +764,218 @@ function renderVideos() {
 // =====================================================
 
 function attachVideoEvents() {
-  const articles = document.querySelectorAll("article[data-id]");
 
-  console.log("Attaching events to:", articles.length, "videos");
+    const articles =
+        document.querySelectorAll(
+            "article[data-id]"
+        );
 
-  articles.forEach((article) => {
-    // -----------------------------------------
-    // Open video
-    // -----------------------------------------
+    console.log(
+        "Attaching events to:",
+        articles.length,
+        "videos"
+    );
 
-    article.addEventListener("click", function (event) {
-      // Don't open video when clicking Like
-      if (event.target.closest(".like-btn")) {
-        return;
-      }
+    articles.forEach((article) => {
 
-      const videoId = article.dataset.id;
+        // =================================================
+        // OPEN VIDEO
+        // =================================================
 
-      console.log("Opening video:", videoId);
+        article.addEventListener(
+            "click",
+            function (event) {
 
-      addToWatchHistory(videoId);
+                if (
+                    event.target.closest(
+                        ".like-btn"
+                    )
+                ) {
 
-      window.location.href = `video.html?id=${videoId}`;
+                    return;
+                }
+
+                const videoId =
+                    article.dataset.id;
+
+                console.log(
+                    "Opening video:",
+                    videoId
+                );
+
+                addToWatchHistory(
+                    videoId
+                );
+
+                window.location.href =
+                    `/video?id=${videoId}`;
+            }
+        );
+
+        // =================================================
+        // LIKE BUTTON
+        // =================================================
+
+        const likeButton =
+            article.querySelector(
+                ".like-btn"
+            );
+
+        if (likeButton) {
+
+            likeButton.addEventListener(
+                "click",
+                async function (event) {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const videoId =
+                        likeButton.dataset.id;
+
+                    await toggleLike(
+                        videoId,
+                        likeButton
+                    );
+                }
+            );
+        }
+
+        // =================================================
+        // HOVER
+        // =================================================
+
+        article.addEventListener(
+            "mouseenter",
+            function () {
+
+                article.style.transform =
+                    "translateY(-3px)";
+            }
+        );
+
+        article.addEventListener(
+            "mouseleave",
+            function () {
+
+                article.style.transform =
+                    "translateY(0)";
+            }
+        );
     });
-
-    // -----------------------------------------
-    // Like button
-    // -----------------------------------------
-
-    const likeButton = article.querySelector(".like-btn");
-
-    if (likeButton) {
-      likeButton.addEventListener("click", async function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        const videoId = likeButton.dataset.id;
-
-        await toggleLike(videoId, likeButton);
-      });
-    }
-
-    // -----------------------------------------
-    // Hover effect
-    // -----------------------------------------
-
-    article.addEventListener("mouseenter", function () {
-      article.style.transform = "translateY(-3px)";
-    });
-
-    article.addEventListener("mouseleave", function () {
-      article.style.transform = "translateY(0)";
-    });
-  });
 }
 
 // =====================================================
 // LIKE / UNLIKE VIDEO
 // =====================================================
 
-async function toggleLike(videoId, likeButton) {
-  let likedVideoIds = getLikedVideoIds();
+async function toggleLike(
+    videoId,
+    likeButton
+) {
 
-  const isCurrentlyLiked = likedVideoIds.includes(String(videoId));
+    let likedVideoIds =
+        getLikedVideoIds();
 
-  try {
-    let response;
+    const isCurrentlyLiked =
+        likedVideoIds.includes(
+            String(videoId)
+        );
 
-    // -----------------------------------------
-    // UNLIKE
-    // -----------------------------------------
+    try {
 
-    if (isCurrentlyLiked) {
-      response = await fetch(`${API_URL}/${videoId}/like`, {
-        method: "DELETE",
-      });
+        let response;
+
+        if (isCurrentlyLiked) {
+
+            response = await fetch(
+                `${API_URL}/${videoId}/like`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+        } else {
+
+            response = await fetch(
+                `${API_URL}/${videoId}/like`,
+                {
+                    method: "POST"
+                }
+            );
+        }
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Like API failed: ${response.status}`
+            );
+        }
+
+        // Update local storage
+
+        if (isCurrentlyLiked) {
+
+            likedVideoIds =
+                likedVideoIds.filter(
+                    (id) =>
+                        String(id) !==
+                        String(videoId)
+                );
+
+            likeButton.classList.remove(
+                "liked"
+            );
+
+            likeButton.textContent =
+                "♡ Like";
+
+        } else {
+
+            likedVideoIds.push(
+                String(videoId)
+            );
+
+            likeButton.classList.add(
+                "liked"
+            );
+
+            likeButton.textContent =
+                "♥ Liked";
+        }
+
+        saveLikedVideoIds(
+            likedVideoIds
+        );
+
+        updateLikedVideosCount();
+
+        const video =
+            getVideoById(videoId);
+
+        if (video) {
+
+            video.liked =
+                !isCurrentlyLiked;
+        }
+
+        console.log(
+            "Like status updated:",
+            videoId,
+            !isCurrentlyLiked
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error updating like:",
+            error
+        );
+
+        alert(
+            "Unable to update like. Please try again."
+        );
     }
-
-    // -----------------------------------------
-    // LIKE
-    // -----------------------------------------
-    else {
-      response = await fetch(`${API_URL}/${videoId}/like`, {
-        method: "POST",
-      });
-    }
-
-    if (!response.ok) {
-      throw new Error(`Like API failed: ${response.status}`);
-    }
-
-    // -----------------------------------------
-    // Update local storage
-    // -----------------------------------------
-
-    if (isCurrentlyLiked) {
-      likedVideoIds = likedVideoIds.filter(
-        (id) => String(id) !== String(videoId),
-      );
-
-      likeButton.classList.remove("liked");
-
-      likeButton.textContent = "♡ Like";
-    } else {
-      likedVideoIds.push(String(videoId));
-
-      likeButton.classList.add("liked");
-
-      likeButton.textContent = "♥ Liked";
-    }
-
-    saveLikedVideoIds(likedVideoIds);
-
-    updateLikedVideosCount();
-
-    // Update global video object
-    const video = getVideoById(videoId);
-
-    if (video) {
-      video.liked = !isCurrentlyLiked;
-    }
-
-    console.log("Like status updated:", videoId, !isCurrentlyLiked);
-  } catch (error) {
-    console.error("Error updating like:", error);
-
-    alert("Unable to update like. Please try again.");
-  }
 }
 
 // =====================================================
@@ -624,58 +983,99 @@ async function toggleLike(videoId, likeButton) {
 // =====================================================
 
 async function searchVideos() {
-  const query = searchInput ? searchInput.value.trim() : "";
 
-  if (!query) {
-    loadVideosFromAPI();
+    const query =
+        searchInput
+            ? searchInput.value.trim()
+            : "";
 
-    return;
-  }
+    if (!query) {
 
-  console.log("Searching for:", query);
+        loadVideosFromAPI();
 
-  if (spinner) {
-    spinner.style.display = "block";
-  }
-
-  try {
-    const url = `${SEARCH_API_URL}?keyword=${encodeURIComponent(query)}`;
-
-    console.log("Search API URL:", url);
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Search failed: ${response.status}`);
+        return;
     }
 
-    const data = await response.json();
+    console.log(
+        "Searching for:",
+        query
+    );
 
-    console.log("Search results:", data);
-
-    if (!Array.isArray(data)) {
-      throw new Error("Search API did not return an array.");
-    }
-
-    videos = data;
-
-    // Restore likes
-    const likedVideoIds = getLikedVideoIds();
-
-    videos.forEach((video) => {
-      video.liked = likedVideoIds.includes(String(video.id));
-    });
-
-    renderVideos();
-  } catch (error) {
-    console.error("Search error:", error);
-
-    showAPIError("Unable to search videos.");
-  } finally {
     if (spinner) {
-      spinner.style.display = "none";
+
+        spinner.style.display =
+            "block";
     }
-  }
+
+    try {
+
+        const url =
+            `${SEARCH_API_URL}?keyword=${encodeURIComponent(query)}`;
+
+        console.log(
+            "Search API URL:",
+            url
+        );
+
+        const response =
+            await fetch(url);
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Search failed: ${response.status}`
+            );
+        }
+
+        const data =
+            await response.json();
+
+        console.log(
+            "Search results:",
+            data
+        );
+
+        if (!Array.isArray(data)) {
+
+            throw new Error(
+                "Search API did not return an array."
+            );
+        }
+
+        videos = data;
+
+        const likedVideoIds =
+            getLikedVideoIds();
+
+        videos.forEach((video) => {
+
+            video.liked =
+                likedVideoIds.includes(
+                    String(video.id)
+                );
+        });
+
+        renderVideos();
+
+    } catch (error) {
+
+        console.error(
+            "Search error:",
+            error
+        );
+
+        showAPIError(
+            "Unable to search videos."
+        );
+
+    } finally {
+
+        if (spinner) {
+
+            spinner.style.display =
+                "none";
+        }
+    }
 }
 
 // =====================================================
@@ -683,7 +1083,11 @@ async function searchVideos() {
 // =====================================================
 
 if (searchBtn) {
-  searchBtn.addEventListener("click", searchVideos);
+
+    searchBtn.addEventListener(
+        "click",
+        searchVideos
+    );
 }
 
 // =====================================================
@@ -691,104 +1095,271 @@ if (searchBtn) {
 // =====================================================
 
 if (searchInput) {
-  searchInput.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
 
-      searchVideos();
-    }
-  });
+    searchInput.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                searchVideos();
+            }
+        }
+    );
+
+    searchInput.addEventListener(
+        "input",
+        function () {
+
+            if (
+                searchInput.value.trim() === ""
+            ) {
+
+                loadVideosFromAPI();
+            }
+        }
+    );
 }
 
 // =====================================================
 // CLEAR SEARCH
 // =====================================================
 
-if (clearBtn) {
-  clearBtn.addEventListener("click", function () {
-    if (searchInput) {
-      searchInput.value = "";
+function toggleClearButton() {
+
+    if (!clearBtn || !searchInput) {
+
+        return;
     }
 
+    clearBtn.style.display =
+        searchInput.value.trim()
+            ? "flex"
+            : "none";
+}
+
+function clearSearch() {
+
+    if (searchInput) {
+
+        searchInput.value = "";
+    }
+
+    toggleClearButton();
+
     loadVideosFromAPI();
-  });
+}
+
+if (clearBtn) {
+
+    clearBtn.addEventListener(
+        "click",
+        function () {
+
+            clearSearch();
+        }
+    );
 }
 
 // =====================================================
-// SIDEBAR CATEGORY FILTER
+// SHOW ONLY ONE SECTION
 // =====================================================
 
 function showOnlySection(sectionId) {
-  const sections = [
-    "recommended-section",
-    "trending-section",
-    "music-section",
-    "movies",
-  ];
 
-  sections.forEach((id) => {
-    const section = document.getElementById(id);
+    const sections = [
 
-    if (section) {
-      section.style.display = id === sectionId ? "block" : "none";
-    }
-  });
+        "recommended-section",
+        "trending-section",
+        "music-section",
+        "movies"
+
+    ];
+
+    sections.forEach((id) => {
+
+        const section =
+            document.getElementById(id);
+
+        if (section) {
+
+            if (id === sectionId) {
+
+                section.style.display =
+                    "block";
+
+            } else {
+
+                section.style.display =
+                    "none";
+            }
+        }
+    });
+
+    console.log(
+        "Showing section:",
+        sectionId
+    );
 }
 
 // =====================================================
-// SIDEBAR LINKS
+// SIDEBAR CATEGORY NAVIGATION
 // =====================================================
 
-const sidebarLinks = document.querySelectorAll("aside a, aside button");
+function setupSidebarNavigation() {
 
-sidebarLinks.forEach((link) => {
-  link.addEventListener("click", function () {
-    const text = this.textContent.trim().toLowerCase();
+    const sidebarLinks =
+        document.querySelectorAll(
+            "aside a, aside button, aside li"
+        );
 
-    if (text.includes("home")) {
-      showOnlySection("recommended-section");
-    } else if (text.includes("trending")) {
-      showOnlySection("trending-section");
-    } else if (text.includes("music")) {
-      showOnlySection("music-section");
-    } else if (text.includes("movie")) {
-      showOnlySection("movies");
-    }
-  });
-});
+    console.log(
+        "Sidebar links found:",
+        sidebarLinks.length
+    );
+
+    sidebarLinks.forEach((link) => {
+
+        link.addEventListener(
+            "click",
+            function (event) {
+
+                const text =
+                    this.textContent
+                        .trim()
+                        .toLowerCase();
+
+                console.log(
+                    "Sidebar clicked:",
+                    text
+                );
+
+                // HOME
+
+                if (
+                    text.includes("home")
+                ) {
+
+                    event.preventDefault();
+
+                    showOnlySection(
+                        "recommended-section"
+                    );
+
+                    return;
+                }
+
+                // TRENDING
+
+                if (
+                    text.includes("trending")
+                ) {
+
+                    event.preventDefault();
+
+                    showOnlySection(
+                        "trending-section"
+                    );
+
+                    return;
+                }
+
+                // MUSIC
+
+                if (
+                    text.includes("music")
+                ) {
+
+                    event.preventDefault();
+
+                    showOnlySection(
+                        "music-section"
+                    );
+
+                    return;
+                }
+
+                // MOVIES
+
+                if (
+                    text.includes("movie")
+                ) {
+
+                    event.preventDefault();
+
+                    showOnlySection(
+                        "movies"
+                    );
+
+                    return;
+                }
+            }
+        );
+    });
+}
 
 // =====================================================
 // WATCH LATER
 // =====================================================
 
 function getWatchLaterVideos() {
-  try {
-    return JSON.parse(localStorage.getItem("watchLaterVideos")) || [];
-  } catch (error) {
-    console.error("Error reading watch later:", error);
 
-    return [];
-  }
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(
+                "watchLaterVideos"
+            )
+        ) || [];
+
+    } catch (error) {
+
+        console.error(
+            "Error reading watch later:",
+            error
+        );
+
+        return [];
+    }
 }
+
 
 function saveWatchLaterVideos(ids) {
-  localStorage.setItem("watchLaterVideos", JSON.stringify(ids));
+
+    localStorage.setItem(
+        "watchLaterVideos",
+        JSON.stringify(ids)
+    );
 }
 
+
 function toggleWatchLater(videoId) {
-  let ids = getWatchLaterVideos();
 
-  videoId = String(videoId);
+    let ids =
+        getWatchLaterVideos();
 
-  if (ids.includes(videoId)) {
-    ids = ids.filter((id) => String(id) !== videoId);
-  } else {
-    ids.push(videoId);
-  }
+    videoId = String(videoId);
 
-  saveWatchLaterVideos(ids);
+    if (ids.includes(videoId)) {
 
-  console.log("Watch later videos:", ids);
+        ids = ids.filter(
+            (id) =>
+                String(id) !== videoId
+        );
+
+    } else {
+
+        ids.push(videoId);
+    }
+
+    saveWatchLaterVideos(ids);
+
+    console.log(
+        "Watch later videos:",
+        ids
+    );
 }
 
 // =====================================================
@@ -796,29 +1367,64 @@ function toggleWatchLater(videoId) {
 // =====================================================
 
 function getSubscriptions() {
-  try {
-    return JSON.parse(localStorage.getItem("subscriptions")) || [];
-  } catch (error) {
-    return [];
-  }
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(
+                "subscriptions"
+            )
+        ) || [];
+
+    } catch (error) {
+
+        console.error(
+            "Error reading subscriptions:",
+            error
+        );
+
+        return [];
+    }
 }
+
 
 function saveSubscriptions(ids) {
-  localStorage.setItem("subscriptions", JSON.stringify(ids));
+
+    localStorage.setItem(
+        "subscriptions",
+        JSON.stringify(ids)
+    );
 }
 
+
 function toggleSubscription(channel) {
-  let subscriptions = getSubscriptions();
 
-  if (subscriptions.includes(channel)) {
-    subscriptions = subscriptions.filter((item) => item !== channel);
-  } else {
-    subscriptions.push(channel);
-  }
+    let subscriptions =
+        getSubscriptions();
 
-  saveSubscriptions(subscriptions);
+    if (
+        subscriptions.includes(channel)
+    ) {
 
-  console.log("Subscriptions:", subscriptions);
+        subscriptions =
+            subscriptions.filter(
+                (item) =>
+                    item !== channel
+            );
+
+    } else {
+
+        subscriptions.push(channel);
+    }
+
+    saveSubscriptions(
+        subscriptions
+    );
+
+    console.log(
+        "Subscriptions:",
+        subscriptions
+    );
 }
 
 // =====================================================
@@ -826,17 +1432,112 @@ function toggleSubscription(channel) {
 // =====================================================
 
 function applyTheme(theme) {
-  if (theme === "dark") {
-    document.body.classList.add("dark-mode");
-  } else {
-    document.body.classList.remove("dark-mode");
-  }
+
+    if (theme === "dark") {
+
+        document.body.classList.add(
+            "dark-mode"
+        );
+
+    } else {
+
+        document.body.classList.remove(
+            "dark-mode"
+        );
+    }
 }
 
-const savedTheme = localStorage.getItem("theme");
+function setupAppearanceMenu() {
+
+    const appearanceButton =
+        document.getElementById(
+            "appearanceBtn"
+        );
+
+    const appearanceMenu =
+        document.getElementById(
+            "appearanceMenu"
+        );
+
+    const backButton =
+        document.getElementById(
+            "backAppearance"
+        );
+
+    if (
+        !appearanceButton ||
+        !appearanceMenu
+    ) {
+
+        return;
+    }
+
+    appearanceButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+            appearanceMenu.classList.add(
+                "show"
+            );
+        }
+    );
+
+    appearanceMenu.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+        }
+    );
+
+    if (backButton) {
+
+        backButton.addEventListener(
+            "click",
+            function () {
+
+                appearanceMenu.classList.remove(
+                    "show"
+                );
+            }
+        );
+    }
+
+    appearanceMenu
+        .querySelectorAll(
+            'input[name="theme"]'
+        )
+        .forEach(function (themeInput) {
+
+            themeInput.addEventListener(
+                "change",
+                function () {
+
+                    const theme =
+                        themeInput.value;
+
+                    localStorage.setItem(
+                        "theme",
+                        theme
+                    );
+
+                    applyTheme(theme);
+                }
+            );
+        });
+}
+
+setupAppearanceMenu();
+
+
+const savedTheme =
+    localStorage.getItem("theme");
 
 if (savedTheme) {
-  applyTheme(savedTheme);
+
+    applyTheme(savedTheme);
 }
 
 // =====================================================
@@ -844,15 +1545,29 @@ if (savedTheme) {
 // =====================================================
 
 function logout() {
-  localStorage.removeItem("isLoggedIn");
 
-  localStorage.removeItem("username");
+    localStorage.removeItem(
+        "isLoggedIn"
+    );
 
-  localStorage.removeItem("userEmail");
+    localStorage.removeItem(
+        "username"
+    );
 
-  console.log("User logged out.");
+    localStorage.removeItem(
+        "userEmail"
+    );
 
-  window.location.href = "youtube_mainhtml.html";
+    localStorage.removeItem(
+        "userId"
+    );
+
+    console.log(
+        "User logged out."
+    );
+
+    window.location.href =
+        "/login";
 }
 
 // =====================================================
@@ -860,23 +1575,101 @@ function logout() {
 // =====================================================
 
 function setupCreateMenu() {
-  const createButton = document.getElementById("createButton");
 
-  const createMenu = document.getElementById("createMenu");
+    const createButton =
+        document.getElementById(
+            "createBtn"
+        );
 
-  if (!createButton || !createMenu) {
-    return;
-  }
+    const createMenu =
+        document.getElementById(
+            "createMenu"
+        );
 
-  createButton.addEventListener("click", function (event) {
-    event.stopPropagation();
+    const uploadVideoButton =
+        document.getElementById(
+            "uploadVideoBtn"
+        );
 
-    createMenu.classList.toggle("show");
-  });
+    const goLiveButton =
+        document.getElementById(
+            "goLiveBtn"
+        );
 
-  document.addEventListener("click", function () {
-    createMenu.classList.remove("show");
-  });
+    const createPostButton =
+        document.getElementById(
+            "createPostBtn"
+        );
+
+    if (
+        !createButton ||
+        !createMenu
+    ) {
+
+        return;
+    }
+
+    if (uploadVideoButton) {
+
+        uploadVideoButton.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+
+                window.location.href =
+                    "/upload";
+            }
+        );
+    }
+
+    if (goLiveButton) {
+
+        goLiveButton.addEventListener(
+            "click",
+            function () {
+
+                alert(
+                    "Live streaming is not available in this demo."
+                );
+            }
+        );
+    }
+
+    if (createPostButton) {
+
+        createPostButton.addEventListener(
+            "click",
+            function () {
+
+                alert(
+                    "Creating posts is not available in this demo."
+                );
+            }
+        );
+    }
+
+    createButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+            createMenu.classList.toggle(
+                "show"
+            );
+        }
+    );
+
+    document.addEventListener(
+        "click",
+        function () {
+
+            createMenu.classList.remove(
+                "show"
+            );
+        }
+    );
 }
 
 setupCreateMenu();
@@ -886,23 +1679,50 @@ setupCreateMenu();
 // =====================================================
 
 function setupNotifications() {
-  const notificationButton = document.getElementById("notificationButton");
 
-  const notificationPopup = document.getElementById("notificationPopup");
+    const notificationButton =
+        document.getElementById(
+            "notificationBtn"
+        );
 
-  const closeNotification = document.getElementById("closeNotification");
+    const notificationPopup =
+        document.getElementById(
+            "notificationPopup"
+        );
 
-  if (notificationButton && notificationPopup) {
-    notificationButton.addEventListener("click", function () {
-      notificationPopup.classList.toggle("show");
-    });
-  }
+    const closeNotification =
+        document.getElementById(
+            "closeNotification"
+        );
 
-  if (closeNotification) {
-    closeNotification.addEventListener("click", function () {
-      notificationPopup.classList.remove("show");
-    });
-  }
+    if (
+        notificationButton &&
+        notificationPopup
+    ) {
+
+        notificationButton.addEventListener(
+            "click",
+            function () {
+
+                notificationPopup.classList.toggle(
+                    "show"
+                );
+            }
+        );
+    }
+
+    if (closeNotification) {
+
+        closeNotification.addEventListener(
+            "click",
+            function () {
+
+                notificationPopup.classList.remove(
+                    "show"
+                );
+            }
+        );
+    }
 }
 
 setupNotifications();
@@ -912,84 +1732,296 @@ setupNotifications();
 // =====================================================
 
 function setupProfileMenu() {
-  const profileButton = document.getElementById("profileButton");
 
-  const profileMenu = document.getElementById("profileMenu");
+    const profileButton =
+        document.getElementById(
+            "profileBtn"
+        );
 
-  if (!profileButton || !profileMenu) {
-    return;
-  }
+    const profileMenu =
+        document.getElementById(
+            "profileMenu"
+        );
 
-  profileButton.addEventListener("click", function (event) {
-    event.stopPropagation();
+    if (
+        !profileButton ||
+        !profileMenu
+    ) {
 
-    profileMenu.classList.toggle("show");
-  });
+        return;
+    }
 
-  document.addEventListener("click", function () {
-    profileMenu.classList.remove("show");
-  });
+    profileButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+            profileMenu.classList.toggle(
+                "show"
+            );
+        }
+    );
+
+    document.addEventListener(
+        "click",
+        function () {
+
+            profileMenu.classList.remove(
+                "show"
+            );
+        }
+    );
 }
 
 setupProfileMenu();
+
+// =====================================================
+// HELP MENU
+// =====================================================
+
+function setupHelpMenu() {
+
+    const helpButton =
+        document.getElementById(
+            "helpBtn"
+        );
+
+    const helpMenu =
+        document.getElementById(
+            "helpMenu"
+        );
+
+    const closeHelp =
+        document.getElementById(
+            "closeHelp"
+        );
+
+    const helpSearch =
+        document.getElementById(
+            "helpSearch"
+        );
+
+    if (
+        !helpButton ||
+        !helpMenu
+    ) {
+
+        return;
+    }
+
+    function closeHelpMenu() {
+
+        helpMenu.classList.remove(
+            "is-open"
+        );
+
+        helpMenu.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    }
+
+    helpButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const isOpen =
+                helpMenu.classList.toggle(
+                    "is-open"
+                );
+
+            helpMenu.setAttribute(
+                "aria-hidden",
+                String(!isOpen)
+            );
+
+            if (isOpen && helpSearch) {
+
+                helpSearch.focus();
+            }
+        }
+    );
+
+    helpMenu.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+        }
+    );
+
+    if (closeHelp) {
+
+        closeHelp.addEventListener(
+            "click",
+            closeHelpMenu
+        );
+    }
+
+    if (helpSearch) {
+
+        helpSearch.addEventListener(
+            "input",
+            function () {
+
+                const query =
+                    helpSearch.value
+                        .trim()
+                        .toLowerCase();
+
+                helpMenu
+                    .querySelectorAll(
+                        ".help-item"
+                    )
+                    .forEach(function (item) {
+
+                        item.hidden =
+                            !item.textContent
+                                .toLowerCase()
+                                .includes(query);
+                    });
+            }
+        );
+    }
+
+    document.addEventListener(
+        "click",
+        closeHelpMenu
+    );
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                closeHelpMenu();
+            }
+        }
+    );
+}
+
+setupHelpMenu();
 
 // =====================================================
 // VOICE SEARCH
 // =====================================================
 
 function startVoiceSearch() {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  if (!SpeechRecognition) {
-    alert("Voice search is not supported in this browser.");
+    const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
 
-    return;
-  }
+    if (!SpeechRecognition) {
 
-  const recognition = new SpeechRecognition();
+        alert(
+            "Voice search is not supported in this browser."
+        );
 
-  recognition.lang = "en-IN";
-
-  recognition.interimResults = false;
-
-  recognition.maxAlternatives = 1;
-
-  recognition.start();
-
-  recognition.onresult = function (event) {
-    const text = event.results[0][0].transcript;
-
-    if (searchInput) {
-      searchInput.value = text;
+        return;
     }
 
-    searchVideos();
-  };
+    const recognition =
+        new SpeechRecognition();
 
-  recognition.onerror = function (event) {
-    console.error("Voice search error:", event.error);
-  };
+    recognition.lang =
+        "en-IN";
+
+    recognition.interimResults =
+        false;
+
+    recognition.maxAlternatives =
+        1;
+
+    recognition.start();
+
+    recognition.onresult =
+        function (event) {
+
+            const text =
+                event.results[0][0]
+                    .transcript;
+
+            if (searchInput) {
+
+                searchInput.value =
+                    text;
+            }
+
+            searchVideos();
+        };
+
+    recognition.onerror =
+        function (event) {
+
+            console.error(
+                "Voice search error:",
+                event.error
+            );
+        };
 }
 
 // =====================================================
 // VOICE SEARCH BUTTON
 // =====================================================
 
-const voiceSearchButton = document.getElementById("voiceSearchButton");
+const voiceSearchButton =
+    document.getElementById(
+        "voiceBtn"
+    );
 
 if (voiceSearchButton) {
-  voiceSearchButton.addEventListener("click", startVoiceSearch);
+
+    voiceSearchButton.addEventListener(
+        "click",
+        startVoiceSearch
+    );
 }
 
 // =====================================================
 // INITIALIZE APPLICATION
 // =====================================================
 
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("DOM fully loaded.");
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-  updateLikedVideosCount();
+        console.log(
+            "DOM fully loaded."
+        );
 
-  loadVideosFromAPI();
-});
+        updateLikedVideosCount();
+
+        setupSidebarNavigation();
+
+        const requestedSection =
+            new URLSearchParams(window.location.search).get("section");
+        const requestedSearch =
+            new URLSearchParams(window.location.search).get("search");
+
+        if (requestedSearch && searchInput) {
+            searchInput.value = requestedSearch;
+            searchVideos();
+            return;
+        }
+
+        if (requestedSection === "trending") {
+            showOnlySection("trending-section");
+        } else if (requestedSection === "music") {
+            showOnlySection("music-section");
+        } else if (requestedSection === "movies") {
+            showOnlySection("movies");
+        } else {
+            showOnlySection("recommended-section");
+        }
+
+        loadVideosFromAPI();
+    }
+);

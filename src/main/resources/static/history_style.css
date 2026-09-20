@@ -166,6 +166,27 @@
             top: 0;
         }
 
+        body.sidebar-collapsed aside {
+            display: none;
+        }
+
+        .main-navigation {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-navigation li {
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 10px 12px;
+        }
+
+        .main-navigation li:hover {
+            background: var(--chip-bg);
+        }
+
         .channel-list {
             list-style: none;
             margin: 0 0 8px 0;

@@ -255,6 +255,10 @@ aside {
   overflow-y: auto;
 }
 
+body.sidebar-collapsed > main > aside {
+  display: none;
+}
+
 aside ul {
   list-style: none;
   display: flex;
@@ -450,6 +454,10 @@ article p {
   z-index: 999;
 }
 
+.profile-menu.show {
+  display: block;
+}
+
 .profile-menu a {
   display: block;
   color: var(--text);
@@ -522,6 +530,10 @@ article p {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 
   overflow: hidden;
+}
+
+.appearance-menu.show {
+  display: block;
 }
 
 .appearance-header {

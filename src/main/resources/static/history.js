@@ -188,7 +188,7 @@ function renderHistory() {
   const emptyState = document.getElementById("emptyState");
 
   if (!historyList) {
-    console.error("historyList element not found in history.html");
+    console.error("historyList element not found in the history page");
     return;
   }
 
@@ -386,7 +386,7 @@ function createHistoryItem(video) {
     // user watched it again
     addToHistory(video.id);
 
-    window.location.href = "video.html?id=" + encodeURIComponent(video.id);
+    window.location.href = "/video?id=" + encodeURIComponent(video.id);
   });
 
   return item;
@@ -635,7 +635,7 @@ function setupSearchButton() {
       return;
     }
 
-    window.location.href = "index.html?search=" + encodeURIComponent(query);
+    window.location.href = "/index?search=" + encodeURIComponent(query);
   }
 
   searchBtn.addEventListener("click", performSearch);
