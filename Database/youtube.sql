@@ -4,7 +4,18 @@ SHOW DATABASES;
 
 USE youtube_db;
 
+select * from users;
+
+SELECT * FROM user_video_likes;
+
+SELECT user_id, video_id, COUNT(*)
+FROM user_video_likes
+GROUP BY user_id, video_id;
+
+
 select * from videos;
+
+
 
 truncate table videos;
 
@@ -18,16 +29,16 @@ INSERT INTO videos
 (id, title, channel, views, uploaded, duration, thumbnail, video_url, category, liked)
 VALUES
 
-(48,
- 'Emraan Hashmi All Time Hits',
- 'T-Series',
- '32M',
- '3 days ago',
- '10:25',
+(56,
+ 'Afsana Banaya Apne',
+ 'Soham RockStar - Himesh',
+ '75M',
+ '2 weeks ago',
+ '03:32',
  'https://via.placeholder.com/300x170?text=Emraan+Hits',
  'https://www.youtube.com/results?search_query=Emraan+Hashmi+all+time+hits',
- 'Recommended',
- false),
+ 'Music',
+ false);
 
 (49,
  'Emraan Hashmi Romantic Songs',
@@ -106,9 +117,17 @@ VALUES
  'Recommended',
  false);
  
+ use youtube_db;
  
- select * from videos;
+ select * from videos where category = 'Movies' 
  
  
- update videos set thumbnail = 'https://th.bing.com/th/id/OIP.2DzgYcnEjvaXfGBxWhkxXAHaEK?w=320&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3' where id = 47;
+ update videos set duration = '1:21:12' where category = 'Trending' and id = 31;
  
+ select * from users;
+ 
+ select * from user_video_likes;
+ 
+ update videos set thumbnail = 'https://tse1.mm.bing.net/th?&id=OVP.6-TRDERixRmVES06HpWVawEsDh&w=231&h=131&c=7&pid=6.1&rs=1' where id = 56;
+ 
+ show databases
