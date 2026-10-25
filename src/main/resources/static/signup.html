@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up - Raunak Dummy YouTube</title>
+    <link rel="stylesheet" href="login.css">
+    <link rel="icon" type="image/svg+xml" href="/youtube-icon.svg">
+</head>
+
+<body>
+    <main class="login-page">
+        <section class="login-card" aria-labelledby="signupTitle">
+            <a class="brand" href="/" aria-label="Return to home">
+                <span class="brand-icon">▶</span>
+                <span>Raunak Dummy YouTube</span>
+            </a>
+
+            <h1 id="signupTitle">Create your account</h1>
+            <p class="login-subtitle">Sign up to get started with RTube</p>
+
+            <form id="signupForm" novalidate>
+                <label for="signupUsername">Username</label>
+                <input id="signupUsername" name="username" type="text"
+                    autocomplete="username" placeholder="Choose a username"
+                    maxlength="80" required>
+
+                <label for="signupEmail">Email</label>
+                <input id="signupEmail" name="email" type="email"
+                    autocomplete="email" placeholder="Enter your email"
+                    maxlength="254" required>
+
+                <label for="signupPassword">Password</label>
+                <input id="signupPassword" name="password" type="password"
+                    autocomplete="new-password" placeholder="Create a password"
+                    minlength="8" maxlength="72" required>
+                <p class="signup-help">Use at least 8 characters.</p>
+
+                <label for="confirmSignupPassword">Confirm password</label>
+                <input id="confirmSignupPassword" name="confirmPassword" type="password"
+                    autocomplete="new-password" placeholder="Enter your password again"
+                    minlength="8" maxlength="72" required>
+
+                <p id="signupMessage" class="message" role="alert" aria-live="polite"></p>
+                <button id="signupButton" class="login-button" type="submit">Sign up</button>
+            </form>
+
+            <p class="back-link">Already have an account? <a href="/login">Sign in</a></p>
+        </section>
+    </main>
+
+    <script src="signup.js?v=20261021-account-created-popup"></script>
+</body>
+
+</html>

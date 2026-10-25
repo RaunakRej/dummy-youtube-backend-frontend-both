@@ -1,155 +1,101 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Video Player</title>
-
-    <!-- Keep your existing <style>...</style> here -->
-
+    <title>Video Player - RTube</title>
+    <link rel="icon" type="image/svg+xml" href="/youtube-icon.svg?v=20261022-brand-mark">
+    <link rel="shortcut icon" type="image/svg+xml" href="/youtube-icon.svg?v=20261022-brand-mark">
+    <link rel="stylesheet" href="video_page.css">
 </head>
 
 <body>
-
-    <div class="video-container">
-
-        <div class="player-container">
-
-            <iframe id="player" allow="autoplay; encrypted-media" allowfullscreen>
-            </iframe>
-
-        </div>
-
-        <div class="video-info">
-
-            <h1 id="title">Loading video...</h1>
-
-            <div class="video-meta">
-
-                <span id="views"></span>
-
-                <span> • </span>
-
-                <span id="uploaded"></span>
-
+    <main class="video-container">
+        <section class="video-content" aria-label="Video">
+            <div class="player-container">
+                <iframe
+                    id="player"
+                    title="Video player"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen>
+                </iframe>
             </div>
 
-            <div class="video-actions">
+            <div class="video-info">
+                <h1 id="title">Loading video...</h1>
 
-                <button id="likeBtn">
-                    👍 Like
-                </button>
-
-                <button id="shareBtn">
-                    ↗ Share
-                </button>
-
-                <button id="saveBtn">
-                    💾 Save
-                </button>
-
-            </div>
-
-            <div class="channel-section">
-
-                <div class="channel-avatar">
-                    👤
+                <div class="video-meta">
+                    <span id="views"></span>
+                    <span aria-hidden="true"> · </span>
+                    <span id="uploaded"></span>
                 </div>
 
-                <div>
+                <div class="video-actions">
+                    <button id="likeBtn" type="button">👍 Like</button>
+                    <button id="shareBtn" type="button">↗ Share</button>
+                    <button id="saveBtn" type="button">💾 Save</button>
+                </div>
+
+                <div class="channel-section">
+                    <div class="channel-avatar" aria-hidden="true">👤</div>
                     <div id="channel" class="channel-name"></div>
-                </div>
-
-                <button id="subscribeBtn" class="subscribe-btn">
-                    Subscribe
-                </button>
-
-            </div>
-
-            <div id="description" class="description">
-                Loading description...
-            </div>
-
-        </div>
-
-        <section class="comments-section">
-
-            <div class="comments-header">
-
-                <h2>
-                    Comments
-                    <span id="commentCount">
-                        0
-                    </span>
-                </h2>
-
-            </div>
-
-            <div class="comment-input-container">
-
-                <div class="comment-avatar">
-                    👤
-                </div>
-
-                <div class="comment-input-area">
-
-                    <textarea id="commentInput" placeholder="Add a comment..." maxlength="500">
-                    </textarea>
-
-                    <div class="comment-actions">
-
-                        <button id="cancelCommentBtn" class="cancel-comment">
-                            Cancel
-                        </button>
-
-                        <button id="postCommentBtn" class="post-comment">
-                            Comment
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="comment-sort">
-
-                <button id="sortCommentsBtn">
-                    ↕ Sort by
-                </button>
-
-                <div id="sortCommentsMenu" class="sort-menu">
-
-                    <button data-sort="top">
-                        Top comments
+                    <button id="subscribeBtn" class="subscribe-btn" type="button">
+                        Subscribe
                     </button>
-
-                    <button data-sort="newest">
-                        Newest first
-                    </button>
-
-                    <button data-sort="oldest">
-                        Oldest first
-                    </button>
-
                 </div>
 
+                <p id="description" class="description">Loading description...</p>
             </div>
-
-            <div id="commentsContainer">
-            </div>
-
         </section>
 
-    </div>
+        <section class="comments-section" aria-labelledby="commentsHeading">
+            <div class="comments-header">
+                <h2 id="commentsHeading">
+                    Comments <span id="commentCount">0</span>
+                </h2>
+            </div>
+
+            <form id="commentForm" class="comment-input-container">
+                <div class="comment-avatar" aria-hidden="true">👤</div>
+                <div class="comment-input-area">
+                    <label class="visually-hidden" for="commentInput">Add a comment</label>
+                    <textarea
+                        id="commentInput"
+                        placeholder="Add a comment..."
+                        maxlength="2000"
+                        required></textarea>
+                    <div class="comment-actions">
+                        <button id="cancelCommentBtn" class="cancel-comment" type="reset">
+                            Cancel
+                        </button>
+                        <button id="postCommentBtn" class="post-comment" type="submit">
+                            Comment
+                        </button>
+                    </div>
+                    <p id="commentsStatus" class="comments-status" role="status" aria-live="polite"></p>
+                </div>
+            </form>
+
+            <div class="comment-sort">
+                <button
+                    id="sortCommentsBtn"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="sortCommentsMenu">
+                    Newest first ▾
+                </button>
+                <div id="sortCommentsMenu" class="sort-menu" hidden>
+                    <button type="button" data-sort="newest">Newest first</button>
+                    <button type="button" data-sort="oldest">Oldest first</button>
+                </div>
+            </div>
+
+            <div id="commentsContainer" aria-live="polite"></div>
+        </section>
+    </main>
 
     <script src="video.js"></script>
-
 </body>
 
 </html>
-```

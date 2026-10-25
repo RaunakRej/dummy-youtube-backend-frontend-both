@@ -1,0 +1,299 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, sans-serif;
+  color: #0f0f0f;
+  background: #f9f9f9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.video-container {
+  width: min(100% - 32px, 1100px);
+  margin: 28px auto;
+}
+
+.video-content {
+  max-width: 900px;
+}
+
+.player-container {
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #111;
+  border-radius: 12px;
+}
+
+.player-container iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-info h1 {
+  margin: 18px 0 8px;
+  font-size: clamp(20px, 3vw, 28px);
+}
+
+.video-meta {
+  color: #606060;
+  font-size: 14px;
+}
+
+.video-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.video-actions button,
+.subscribe-btn,
+.comment-sort > button,
+.sort-menu button {
+  padding: 9px 14px;
+  color: inherit;
+  background: #f0f0f0;
+  border: 0;
+  border-radius: 20px;
+}
+
+.video-actions button:hover,
+.comment-sort > button:hover,
+.sort-menu button:hover {
+  background: #e4e4e4;
+}
+
+.channel-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #e5e5e5;
+}
+
+.channel-avatar,
+.comment-avatar {
+  display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  background: #e5e5e5;
+  border-radius: 50%;
+}
+
+.channel-name {
+  font-weight: 600;
+}
+
+.subscribe-btn {
+  margin-left: auto;
+  color: #fff;
+  background: #0f0f0f;
+}
+
+.description {
+  margin: 0;
+  padding: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  background: #eee;
+  border-radius: 10px;
+}
+
+.comments-section {
+  max-width: 900px;
+  margin-top: 30px;
+}
+
+.comments-header h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 20px;
+  font-size: 20px;
+}
+
+#commentCount {
+  color: #606060;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.comment-input-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.comment-input-area {
+  flex: 1;
+  min-width: 0;
+}
+
+#commentInput {
+  display: block;
+  width: 100%;
+  min-height: 72px;
+  padding: 10px 0;
+  resize: vertical;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #aaa;
+  outline: none;
+}
+
+#commentInput:focus {
+  border-bottom: 2px solid #0f0f0f;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.comment-actions button,
+.comment-delete {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 20px;
+}
+
+.cancel-comment {
+  background: #eee;
+}
+
+.post-comment {
+  color: #fff;
+  background: #065fd4;
+}
+
+.post-comment:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.comments-status {
+  min-height: 20px;
+  margin: 8px 0 0;
+  color: #606060;
+  font-size: 14px;
+}
+
+.comment-sort {
+  position: relative;
+  width: fit-content;
+  margin: 14px 0;
+}
+
+.sort-menu {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 4px);
+  left: 0;
+  display: grid;
+  min-width: 150px;
+  padding: 6px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 14px #0002;
+}
+
+.sort-menu[hidden] {
+  display: none;
+}
+
+.sort-menu button {
+  text-align: left;
+  background: transparent;
+  border-radius: 6px;
+}
+
+.comment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+}
+
+.comment-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-author {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.comment-date {
+  margin-left: 6px;
+  color: #606060;
+  font-weight: 400;
+}
+
+.comment-text {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-delete {
+  color: #606060;
+  background: transparent;
+}
+
+.comment-delete:hover {
+  background: #eee;
+}
+
+.empty-comments {
+  color: #606060;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@media (max-width: 600px) {
+  .video-container {
+    width: 100%;
+    margin: 0 auto 24px;
+  }
+
+  .video-content,
+  .comments-section {
+    padding: 0 14px;
+  }
+
+  .player-container {
+    border-radius: 0;
+  }
+}

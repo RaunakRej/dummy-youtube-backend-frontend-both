@@ -93,18 +93,28 @@ function normalizeHistory(history) {
 // REMOVE VIDEO FROM HISTORY
 // =====================================================
 
-function removeFromHistory(videoId) {
-  let history = getHistory();
+async function removeFromHistory(videoId) {
+  try {
+    const response = await fetch(
+      API_URL + "/history/" + encodeURIComponent(videoId),
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
 
-  history = normalizeHistory(history);
+    if (!response.ok) {
+      throw new Error("Failed to remove history item. Status: " + response.status);
+    }
 
-  history = history.filter(function (item) {
-    return String(item.id) !== String(videoId);
-  });
-
-  saveHistory(history);
-
-  loadHistory();
+    historyVideos = historyVideos.filter(function (item) {
+      return String(item.id) !== String(videoId);
+    });
+    renderHistory();
+  } catch (error) {
+    console.error("Unable to remove video from watch history:", error);
+    alert("Unable to remove this video from your watch history.");
+  }
 }
 
 // =====================================================
@@ -112,9 +122,7 @@ function removeFromHistory(videoId) {
 // =====================================================
 
 function clearAllHistory() {
-  const history = getHistory();
-
-  if (history.length === 0) {
+  if (historyVideos.length === 0) {
     alert("Watch history is already empty.");
     return;
   }
@@ -125,11 +133,26 @@ function clearAllHistory() {
     return;
   }
 
-  localStorage.removeItem(HISTORY_KEY);
+  clearWatchHistoryFromBackend();
+}
 
-  historyVideos = [];
+async function clearWatchHistoryFromBackend() {
+  try {
+    const response = await fetch(API_URL + "/history", {
+      method: "DELETE",
+      credentials: "include",
+    });
 
-  renderHistory();
+    if (!response.ok) {
+      throw new Error("Failed to clear watch history. Status: " + response.status);
+    }
+
+    historyVideos = [];
+    renderHistory();
+  } catch (error) {
+    console.error("Unable to clear watch history:", error);
+    alert("Unable to clear your watch history.");
+  }
 }
 
 // =====================================================
@@ -148,13 +171,28 @@ async function loadVideosFromAPI() {
 
     console.log("Videos loaded from API:", videos);
 
-    loadHistory();
-  } catch (error) {
-    console.error("API Error:", error);
+    const historyResponse = await fetch(API_URL + "/history", {
+      credentials: "include",
+    });
 
-    // Even if API fails, try displaying
-    // history objects already stored locally.
-    loadHistory();
+    if (!historyResponse.ok) {
+      throw new Error(
+        "Failed to fetch watch history. Status: " + historyResponse.status
+      );
+    }
+
+    const history = await historyResponse.json();
+
+    if (!Array.isArray(history)) {
+      throw new Error("Watch history API returned an invalid response.");
+    }
+
+    historyVideos = history;
+    console.log("Watch history loaded from API:", historyVideos);
+    renderHistory();
+  } catch (error) {
+    console.error("Unable to load watch history from API:", error);
+    showAPIError();
   }
 }
 
@@ -712,11 +750,11 @@ function showAPIError() {
         text-align:center;
       ">
 
-        Unable to load videos from server.
+        Unable to load your watch history from the server.
 
         <br>
 
-        Please make sure Spring Boot is running.
+        Please make sure the server is running and you are signed in.
 
       </div>
 

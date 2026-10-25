@@ -149,6 +149,19 @@
             cursor: pointer;
         }
 
+        .profile-avatar-button {
+            padding: 0;
+            border: 0;
+            background: transparent;
+        }
+
+        .profile-avatar-button img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
         /* ---------- Layout ---------- */
         main {
             display: flex;

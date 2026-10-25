@@ -1,4 +1,3 @@
-```javascript
 /* =====================================================
    VIDEO DETAILS PAGE
    Loads video information from Spring Boot API
@@ -32,7 +31,6 @@ console.log("VIDEO DETAILS PAGE");
 console.log("Raw ID:", rawId);
 console.log("Clean Video ID:", id);
 
-```javascript
 // =====================================================
 // SPRING BOOT API URL
 // =====================================================
@@ -46,7 +44,6 @@ if (id) {
 }
 
 console.log("API URL:", API_URL);
-```
 
 
 
@@ -60,6 +57,8 @@ let viewsElement;
 let uploadedElement;
 let channelElement;
 let descriptionElement;
+let comments = [];
+let commentSortOrder = "newest";
 
 
 // =====================================================
@@ -84,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("description:", descriptionElement);
 
     setupShareButton();
+    setupCommentControls();
 
     loadVideo();
 });
@@ -153,6 +153,7 @@ async function loadVideo() {
         // =================================================
 
         displayVideo(video);
+        loadComments();
 
     } catch (error) {
 
@@ -278,7 +279,7 @@ function displayVideo(video) {
     // =================================================
 
     saveToWatchHistory(video);
-
+	saveWatchHistoryToBackend(video);
 
     // =================================================
     // LIKE
@@ -471,6 +472,48 @@ function saveToWatchHistory(video) {
 
         console.error(
             "Error saving watch history:",
+            error
+        );
+    }
+}
+
+
+
+async function saveWatchHistoryToBackend(video) {
+    if (!video || video.id == null) {
+        console.error("Cannot save history: video ID is missing.");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/${encodeURIComponent(video.id)}/history`,
+            {
+                method: "POST",
+                credentials: "include"
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+
+            console.error(
+                "Failed to save watch history:",
+                response.status,
+                errorText
+            );
+
+            return;
+        }
+
+        console.log(
+            "Watch history saved to backend for video:",
+            video.id
+        );
+
+    } catch (error) {
+        console.error(
+            "Error saving watch history to backend:",
             error
         );
     }
@@ -1069,4 +1112,264 @@ function showError(message) {
         playerElement.removeAttribute("src");
     }
 }
-```
+
+function setupCommentControls() {
+    const commentForm = document.getElementById("commentForm");
+    const commentInput = document.getElementById("commentInput");
+    const sortButton = document.getElementById("sortCommentsBtn");
+    const sortMenu = document.getElementById("sortCommentsMenu");
+
+    if (commentForm && commentInput) {
+        commentForm.addEventListener("submit", postComment);
+    }
+
+    if (sortButton && sortMenu) {
+        sortButton.addEventListener("click", function () {
+            const isExpanded = sortButton.getAttribute("aria-expanded") === "true";
+            sortButton.setAttribute("aria-expanded", String(!isExpanded));
+            sortMenu.hidden = isExpanded;
+        });
+
+        sortMenu.addEventListener("click", function (event) {
+            const target = event.target;
+            if (!(target instanceof HTMLButtonElement)) {
+                return;
+            }
+
+            const selectedSort = target.dataset.sort;
+            if (selectedSort !== "newest" && selectedSort !== "oldest") {
+                return;
+            }
+
+            commentSortOrder = selectedSort;
+            sortButton.textContent = target.textContent + " ▾";
+            sortButton.setAttribute("aria-expanded", "false");
+            sortMenu.hidden = true;
+            renderComments();
+        });
+    }
+}
+
+async function loadComments() {
+    const commentsStatus = document.getElementById("commentsStatus");
+    if (!id) {
+        return;
+    }
+
+    if (commentsStatus) {
+        commentsStatus.textContent = "Loading comments...";
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/${encodeURIComponent(id)}/comments`,
+            { credentials: "include" }
+        );
+
+        if (!response.ok) {
+            throw new Error(await getCommentsApiError(response, "Unable to load comments."));
+        }
+
+        const result = await response.json();
+        if (!Array.isArray(result)) {
+            throw new Error("Comments API returned an invalid response.");
+        }
+
+        comments = result;
+        renderComments();
+        if (commentsStatus) {
+            commentsStatus.textContent = "";
+        }
+    } catch (error) {
+        console.error("Unable to load comments:", error);
+        if (commentsStatus) {
+            commentsStatus.textContent = error.message;
+        }
+    }
+}
+
+async function postComment(event) {
+    event.preventDefault();
+
+    const commentInput = document.getElementById("commentInput");
+    const postButton = document.getElementById("postCommentBtn");
+    const commentsStatus = document.getElementById("commentsStatus");
+    const text = commentInput.value.trim();
+
+    if (!text) {
+        commentsStatus.textContent = "Enter a comment before posting.";
+        commentInput.focus();
+        return;
+    }
+
+    postButton.disabled = true;
+    commentsStatus.textContent = "Posting comment...";
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/${encodeURIComponent(id)}/comments`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(await getCommentsApiError(response, "Unable to post comment."));
+        }
+
+        const comment = await response.json();
+        if (!comment || comment.id == null || comment.text == null) {
+            throw new Error("Comments API returned an invalid response.");
+        }
+
+        comments.push(comment);
+        commentInput.value = "";
+        renderComments();
+        commentsStatus.textContent = "Comment posted.";
+    } catch (error) {
+        console.error("Unable to post comment:", error);
+        commentsStatus.textContent = error.message;
+    } finally {
+        postButton.disabled = false;
+    }
+}
+
+async function deleteComment(commentId, button) {
+    if (!confirm("Delete this comment?")) {
+        return;
+    }
+
+    const commentsStatus = document.getElementById("commentsStatus");
+    button.disabled = true;
+
+    try {
+        const response = await fetch(
+            `/api/comments/${encodeURIComponent(commentId)}`,
+            {
+                method: "DELETE",
+                credentials: "include"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(await getCommentsApiError(response, "Unable to delete comment."));
+        }
+
+        comments = comments.filter(function (comment) {
+            return String(comment.id) !== String(commentId);
+        });
+        renderComments();
+        commentsStatus.textContent = "Comment deleted.";
+    } catch (error) {
+        console.error("Unable to delete comment:", error);
+        commentsStatus.textContent = error.message;
+        button.disabled = false;
+    }
+}
+
+function renderComments() {
+    const commentsContainer = document.getElementById("commentsContainer");
+    const commentCount = document.getElementById("commentCount");
+    if (!commentsContainer || !commentCount) {
+        return;
+    }
+
+    commentCount.textContent = String(comments.length);
+    commentsContainer.replaceChildren();
+
+    if (comments.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "empty-comments";
+        emptyMessage.textContent = "No comments yet. Be the first to comment.";
+        commentsContainer.appendChild(emptyMessage);
+        return;
+    }
+
+    const sortedComments = [...comments].sort(function (first, second) {
+        const firstDate = new Date(first.createdAt).getTime();
+        const secondDate = new Date(second.createdAt).getTime();
+        return commentSortOrder === "newest"
+            ? secondDate - firstDate
+            : firstDate - secondDate;
+    });
+
+    const currentUserId = Number(localStorage.getItem("userId"));
+    sortedComments.forEach(function (comment) {
+        const item = document.createElement("article");
+        item.className = "comment-item";
+
+        const avatar = document.createElement("div");
+        avatar.className = "comment-avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.textContent = "👤";
+
+        const body = document.createElement("div");
+        body.className = "comment-item-body";
+
+        const author = document.createElement("p");
+        author.className = "comment-author";
+        author.append(document.createTextNode(comment.username || "User"));
+
+        if (comment.createdAt) {
+            const date = document.createElement("time");
+            date.className = "comment-date";
+            date.dateTime = comment.createdAt;
+            date.textContent = formatCommentDate(comment.createdAt);
+            author.appendChild(date);
+        }
+
+        const text = document.createElement("p");
+        text.className = "comment-text";
+        text.textContent = comment.text;
+
+        body.append(author, text);
+        item.append(avatar, body);
+
+        if (currentUserId > 0 && Number(comment.userId) === currentUserId) {
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "comment-delete";
+            deleteButton.type = "button";
+            deleteButton.textContent = "Delete";
+            deleteButton.setAttribute("aria-label", "Delete your comment");
+            deleteButton.addEventListener("click", function () {
+                deleteComment(comment.id, deleteButton);
+            });
+            item.appendChild(deleteButton);
+        }
+
+        commentsContainer.appendChild(item);
+    });
+}
+
+function formatCommentDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleString();
+}
+
+async function getCommentsApiError(response, fallbackMessage) {
+    const responseText = await response.text();
+    if (!responseText) {
+        return `${fallbackMessage} (HTTP ${response.status})`;
+    }
+
+    try {
+        const result = JSON.parse(responseText);
+        if (typeof result === "string") {
+            return result;
+        }
+        if (result && typeof result.message === "string") {
+            return result.message;
+        }
+    } catch (error) {
+        console.warn("Comments API returned a non-JSON error response.", error);
+    }
+
+    return responseText;
+}

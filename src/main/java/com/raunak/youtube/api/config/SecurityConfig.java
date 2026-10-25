@@ -1,11 +1,15 @@
 package com.raunak.youtube.api.config;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
 @Configuration
 public class SecurityConfig {
@@ -27,50 +31,52 @@ public class SecurityConfig {
         public SecurityFilterChain securityFilterChain(
                         HttpSecurity http) throws Exception {
 
+                AuthorizationManager<RequestAuthorizationContext> sessionRequired = (authentication,
+                                context) -> {
+                                        HttpSession session = context.getRequest().getSession(false);
+                                        return new AuthorizationDecision(
+                                                        session != null && session
+                                                                        .getAttribute(AuthSession.USER_ID_ATTRIBUTE) != null);
+                                };
+
                 http
                                 // Disable CSRF for our REST APIs
                                 .csrf(csrf -> csrf.disable())
 
-                                // Configure API access
+                                // Permit login, registration, and the static files needed by the login page.
                                 .authorizeHttpRequests(auth -> auth
-
-                                                // Authentication APIs are public
-                                                .requestMatchers("/api/auth/**").permitAll()
-
-                                                // Video APIs are public
-                                                .requestMatchers("/api/videos/**").permitAll()
-
-                                                // Login page
-                                                .requestMatchers("/login").permitAll()
-
-                                                // Frontend files
                                                 .requestMatchers(
-                                                                "/",
                                                                 "/login",
-                                                                "/index",
-                                                                "/channel",
-                                                                "/history",
-                                                                "/likedvideos",
-                                                                "/likedvideo",
-                                                                "/watchlater",
-                                                                "/downloads",
-                                                                "/upload",
-                                                                "/settings",
-                                                                "/video",
-                                                                "/index.html",
-                                                                "/*.html",
+                                                                "/login.html",
+                                                                "/signup",
+                                                                "/signup.html",
+                                                                "/reset-password",
+                                                                "/reset-password.html",
+                                                                "/api/auth/login",
+                                                                "/api/auth/register",
+                                                                "/api/auth/password-reset/request",
+                                                                "/api/auth/password-reset/confirm",
                                                                 "/*.css",
                                                                 "/*.js",
-                                                                "/images/**")
+                                                                "/youtube-icon.svg",
+                                                                "/images/**",
+                                                                "/favicon.ico")
                                                 .permitAll()
+                                                .anyRequest()
+                                                .access(sessionRequired))
+                                .exceptionHandling(exceptions -> exceptions
+                                                .authenticationEntryPoint((request, response, exception) -> {
+                                                        if (request.getRequestURI().startsWith(
+                                                                        request.getContextPath() + "/api/")) {
+                                                                response.sendError(401);
+                                                        } else {
+                                                                response.sendRedirect(
+                                                                                request.getContextPath() + "/login");
+                                                        }
+                                                }));
 
-                                                // Everything else requires authentication
-                                                .anyRequest().authenticated())
-
-                                // Disable default Spring Security login page
+                http
                                 .formLogin(form -> form.disable())
-
-                                // Disable HTTP Basic authentication
                                 .httpBasic(basic -> basic.disable());
 
                 return http.build();

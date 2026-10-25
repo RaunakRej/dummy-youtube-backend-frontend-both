@@ -6,10 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign in - Raunak Dummy YouTube</title>
     <link rel="stylesheet" href="login.css">
-    <link
-        rel="icon"
-        type="image/png"
-        href="https://www.freepnglogos.com/uploads/youtube-logo-png/youtube-transparent-youtube-icon-download-clipart-with-transparent-25.png">
+    <link rel="icon" type="image/svg+xml" href="/youtube-icon.svg">
 </head>
 
 <body>
@@ -47,6 +44,10 @@
                     <button id="togglePassword" type="button" aria-label="Show password">Show</button>
                 </div>
 
+                <p class="forgot-password-link">
+                    <a id="forgotPasswordLink" href="/reset-password">Forgot password?</a>
+                </p>
+
                 <p id="loginMessage" class="message" role="alert" aria-live="polite"></p>
 
                 <button id="loginButton" class="login-button" type="submit">
@@ -55,12 +56,53 @@
             </form>
 
             <p class="back-link">
-                <a href="/">← Back to home</a>
+                New to RTube? <a href="/signup">Sign up</a>
             </p>
         </section>
     </main>
 
-    <script src="login.js"></script>
+    <div id="loginErrorPopup" class="login-popup" hidden>
+        <section class="login-popup-card" role="alertdialog" aria-modal="true"
+            aria-labelledby="loginPopupTitle" aria-describedby="loginPopupMessage">
+            <h2 id="loginPopupTitle">Sign-in failed</h2>
+            <p id="loginPopupMessage">Incorrect password. Please check your password and try again.</p>
+            <button id="closeLoginPopup" type="button">Try again</button>
+        </section>
+    </div>
+
+    <div id="accountCreatedPopup" class="login-popup" hidden>
+        <section class="login-popup-card" role="dialog" aria-modal="true"
+            aria-labelledby="accountCreatedPopupTitle" aria-describedby="accountCreatedPopupMessage">
+            <h2 id="accountCreatedPopupTitle">Account created successfully</h2>
+            <p id="accountCreatedPopupMessage">Your account is ready. Sign in to continue.</p>
+            <button id="closeAccountCreatedPopup" type="button">Continue to sign in</button>
+        </section>
+    </div>
+
+    <div id="forgotPasswordPopup" class="login-popup" hidden>
+        <section class="login-popup-card" role="dialog" aria-modal="true"
+            aria-labelledby="forgotPasswordPopupTitle" aria-describedby="forgotPasswordPopupDescription">
+            <h2 id="forgotPasswordPopupTitle">Reset your password</h2>
+            <p id="forgotPasswordPopupDescription">
+                Enter your account email and we’ll send you a password reset link.
+            </p>
+            <form id="forgotPasswordForm" novalidate>
+                <label for="forgotPasswordEmail">Email</label>
+                <input id="forgotPasswordEmail" name="email" type="email"
+                    autocomplete="email" placeholder="Enter your account email"
+                    maxlength="254" required>
+                <p id="forgotPasswordMessage" class="message" role="status" aria-live="polite"></p>
+                <div class="forgot-password-actions">
+                    <button id="sendResetLinkButton" type="submit">Send reset link</button>
+                    <button id="closeForgotPasswordPopup" class="secondary-popup-button" type="button">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script src="login.js?v=20261024-forgot-password-popup"></script>
 </body>
 
 </html>

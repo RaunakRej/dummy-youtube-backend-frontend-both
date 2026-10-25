@@ -286,6 +286,74 @@ aside li:hover {
   background: var(--card-hover);
 }
 
+.shorts-nav-icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
+.shorts-placeholder-list {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 2px 16px;
+}
+
+.shorts-placeholder-card {
+  position: relative;
+  display: flex;
+  flex: 0 0 clamp(150px, 18vw, 210px);
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(155deg, #ff8a65 0%, #b23a80 48%, #35206f 100%);
+  color: #fff;
+}
+
+.shorts-placeholder-card:nth-child(2) {
+  background: linear-gradient(155deg, #68d6ce 0%, #3479aa 48%, #22285f 100%);
+}
+
+.shorts-placeholder-card:nth-child(3) {
+  background: linear-gradient(155deg, #ffc857 0%, #e66c50 48%, #793260 100%);
+}
+
+.shorts-placeholder-card:nth-child(4) {
+  background: linear-gradient(155deg, #9be15d 0%, #38a889 48%, #265078 100%);
+}
+
+.shorts-placeholder-play {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  padding-left: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+}
+
+.shorts-placeholder-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  gap: 5px;
+  padding: 32px 12px 14px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
+}
+
+.shorts-placeholder-caption span {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
 /* =====================================================
    SECTION
 ===================================================== */
@@ -1065,6 +1133,13 @@ footer {
   width: 300px;
   min-width: 300px;
   height: 170px;
+}
+
+.video-card .thumbnail-container .dur {
+  left: auto;
+  right: 8px;
+  top: auto;
+  bottom: 8px;
 }
 
 .thumbnail-container img {

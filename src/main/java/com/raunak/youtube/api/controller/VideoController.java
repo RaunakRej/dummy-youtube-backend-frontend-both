@@ -1,7 +1,10 @@
 package com.raunak.youtube.api.controller;
 
+import com.raunak.youtube.api.config.AuthSession;
 import com.raunak.youtube.api.model.Video;
 import com.raunak.youtube.api.service.VideoService;
+
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +24,7 @@ public class VideoController {
 
     // =====================================================
     // GET ALL VIDEOS
+    // GET /api/videos
     // =====================================================
 
     @GetMapping
@@ -30,6 +34,7 @@ public class VideoController {
 
     // =====================================================
     // SEARCH VIDEOS API
+    // GET /api/videos/search?keyword={keyword}
     // =====================================================
 
     @GetMapping("/search")
@@ -41,13 +46,15 @@ public class VideoController {
 
     // =====================================================
     // LIKE VIDEO API
+    // POST /api/videos/{id}/like
     // =====================================================
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Video> likeVideo(
-            @PathVariable int id) {
+            @PathVariable int id,
+            HttpSession session) {
 
-        Video video = videoService.likeVideo(id);
+        Video video = videoService.likeVideo(id, session);
 
         if (video == null) {
             return ResponseEntity.notFound().build();
@@ -58,13 +65,15 @@ public class VideoController {
 
     // =====================================================
     // UNLIKE VIDEO API
+    // DELETE /api/videos/{id}/like
     // =====================================================
 
     @DeleteMapping("/{id}/like")
     public ResponseEntity<Video> unlikeVideo(
-            @PathVariable int id) {
+            @PathVariable int id,
+            HttpSession session) {
 
-        Video video = videoService.unlikeVideo(id);
+        Video video = videoService.unlikeVideo(id, session);
 
         if (video == null) {
             return ResponseEntity.notFound().build();
@@ -75,16 +84,89 @@ public class VideoController {
 
     // =====================================================
     // GET LIKED VIDEOS API
+    // GET /api/videos/liked
     // =====================================================
 
     @GetMapping("/liked")
-    public List<Video> getLikedVideos() {
+    public List<Video> getLikedVideos(
+            HttpSession session) {
 
-        return videoService.getLikedVideos();
+        return videoService.getLikedVideos(session);
     }
 
     // =====================================================
-    // GET VIDEO BY ID API
+    // ADD VIDEO TO WATCH HISTORY
+    // POST /api/videos/{id}/history
+    // =====================================================
+
+    @PostMapping("/{id}/history")
+    public ResponseEntity<Video> addToHistory(
+            @PathVariable int id,
+            HttpSession session) {
+
+        Video video = videoService.addToHistory(id, session);
+
+        if (video == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(video);
+    }
+
+    // =====================================================
+    // GET WATCH HISTORY
+    // GET /api/videos/history
+    // =====================================================
+
+    @GetMapping("/history")
+    public List<Video> getWatchHistory(
+            HttpSession session) {
+
+        return videoService.getWatchHistory(session);
+    }
+
+    // =====================================================
+    // DELETE ONE VIDEO FROM WATCH HISTORY
+    // DELETE /api/videos/history/{videoId}
+    // =====================================================
+
+    @DeleteMapping("/history/{videoId}")
+    public ResponseEntity<Void> removeFromHistory(
+            @PathVariable int videoId,
+            HttpSession session) {
+
+        if (session.getAttribute(
+                AuthSession.USER_ID_ATTRIBUTE) == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        videoService.removeFromHistory(videoId, session);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // =====================================================
+    // CLEAR ALL WATCH HISTORY
+    // DELETE /api/videos/history
+    // =====================================================
+
+    @DeleteMapping("/history")
+    public ResponseEntity<Void> clearWatchHistory(
+            HttpSession session) {
+
+        if (session.getAttribute(
+                AuthSession.USER_ID_ATTRIBUTE) == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        videoService.clearWatchHistory(session);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // =====================================================
+    // GET VIDEO BY ID
+    // GET /api/videos/{id}
     // =====================================================
 
     @GetMapping("/{id}")
@@ -99,5 +181,4 @@ public class VideoController {
 
         return ResponseEntity.ok(video);
     }
-
 }

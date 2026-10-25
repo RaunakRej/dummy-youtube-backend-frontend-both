@@ -10,8 +10,7 @@
     <link rel="stylesheet" href="history_style.css">
     <link rel="stylesheet" href="youtube_style.css">
 
-    <link rel="icon" type="image/png"
-        href="https://www.freepnglogos.com/uploads/youtube-logo-png/youtube-transparent-youtube-icon-download-clipart-with-transparent-25.png">
+    <link rel="icon" type="image/svg+xml" href="/youtube-icon.svg">
 </head>
 
 <body>
@@ -76,12 +75,13 @@
                 <div class="notification-item"><div class="notification-avatar">Z</div><div class="notification-text"><p><strong>New video available</strong> from your subscriptions</p><span>1 day ago</span></div><div class="notification-thumbnail placeholder-thumb">▶</div></div>
             </div>
 
-            <img class="avatar" id="profileBtn"
-                src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj"
-                alt="Profile">
+            <button class="avatar profile-avatar-button" id="profileBtn" type="button" aria-label="View profile">
+                <img data-user-profile-picture src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj"
+                    alt="Profile">
+            </button>
             <div id="profileMenu" class="profile-menu">
-                <div class="profile-header"><img src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj" alt="Profile"><div class="profile-user"><h4>Raunak Rej</h4><p class="profile-email">web.raunakrej275@gmail.com</p></div></div>
-                <a href="/channel">👤 Your Channel</a><a href="/history">📜 History</a><a href="/likedvideos">👍 Liked Videos</a><a href="/settings">⚙ Settings</a><a href="/login" id="logoutBtn">🚪 Sign out</a>
+                <div class="profile-header"><img data-user-profile-picture src="https://yt3.ggpht.com/seoNK1MlktRZw8GEsZMOElBRtVl6kKZ81d6hCmcFkUjf-pJ1jsKyAmCoxCi_DvO9O91PSFSJ=s88-c-k-c0x00ffffff-no-rj" alt="Profile"><div class="profile-user"><h4 data-profile-name>Raunak Rej</h4><p class="profile-email" data-profile-email>web.raunakrej275@gmail.com</p></div></div>
+                <a href="/channel">👤 Your Channel</a><a href="/profile">👤 Profile</a><a href="/history">📜 History</a><a href="/likedvideos">👍 Liked Videos</a><a href="/settings">⚙ Settings</a><a href="/logout" id="logoutBtn">🚪 Sign out</a>
             </div>
 
         </div>
@@ -371,6 +371,7 @@
 
     <!-- HISTORY JAVASCRIPT -->
 
+    <script src="profile-picture.js?v=20261009-dynamic-account-display"></script>
     <script src="history.js"></script>
 
     <script src="page-header.js"></script>

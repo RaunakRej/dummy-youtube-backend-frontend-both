@@ -10,18 +10,19 @@ console.log("RTube frontend loaded.");
 
 const API_URL = "/api/videos";
 const SEARCH_API_URL = "/api/videos/search";
+const LIKED_VIDEOS_API_URL = `${API_URL}/liked`;
 
 // =====================================================
 // GLOBAL VARIABLES
 // =====================================================
 
 let videos = [];
+let likedVideoIds = [];
 
 // =====================================================
 // LOCAL STORAGE KEYS
 // =====================================================
 
-const LIKED_VIDEOS_KEY = "likedVideoIds";
 const WATCH_HISTORY_KEY = "watchHistory";
 const WATCH_HISTORY_PAUSED_KEY = "watchHistoryPaused";
 
@@ -122,51 +123,27 @@ function addToWatchHistory(videoId) {
 // LIKED VIDEOS
 // =====================================================
 
-function getLikedVideoIds() {
-
-    try {
-
-        return JSON.parse(
-            localStorage.getItem(
-                LIKED_VIDEOS_KEY
-            )
-        ) || [];
-
-    } catch (error) {
-
-        console.error(
-            "Error reading liked videos:",
-            error
-        );
-
-        return [];
+async function loadLikedVideoIdsFromAPI() {
+    const response = await fetch(LIKED_VIDEOS_API_URL);
+    if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+            window.location.replace("/login");
+            throw new Error("Your session has expired. Please sign in again.");
+        }
+        throw new Error(`Unable to load liked videos: ${response.status}`);
     }
-}
 
-
-function saveLikedVideoIds(ids) {
-
-    try {
-
-        localStorage.setItem(
-            LIKED_VIDEOS_KEY,
-            JSON.stringify(ids)
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Error saving liked videos:",
-            error
-        );
+    const likedVideos = await response.json();
+    if (!Array.isArray(likedVideos)) {
+        throw new Error("Liked videos API did not return an array.");
     }
+
+    likedVideoIds = likedVideos.map((video) => String(video.id));
+    return likedVideoIds;
 }
 
 
 function updateLikedVideosCount() {
-
-    const likedVideoIds =
-        getLikedVideoIds();
 
     const count =
         likedVideoIds.length;
@@ -236,6 +213,10 @@ async function loadVideosFromAPI() {
         );
 
         if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                window.location.replace("/login");
+                return;
+            }
 
             throw new Error(
                 `API request failed: ${response.status}`
@@ -259,9 +240,8 @@ async function loadVideosFromAPI() {
 
         videos = data;
 
-        // Restore like status
-        const likedVideoIds =
-            getLikedVideoIds();
+        // Like state is user-specific and comes from the authenticated API session.
+        await loadLikedVideoIdsFromAPI();
 
         videos.forEach((video) => {
 
@@ -285,6 +265,8 @@ async function loadVideosFromAPI() {
         const sectionId =
             requestedSection === "trending"
                 ? "trending-section"
+                : requestedSection === "shorts"
+                    ? "shorts-section"
                 : requestedSection === "music"
                     ? "music-section"
                     : requestedSection === "movies"
@@ -329,6 +311,10 @@ function showAPIError(message) {
 
         document.getElementById(
             "trendingVideos"
+        ),
+
+        document.getElementById(
+            "shortsVideos"
         ),
 
         document.getElementById(
@@ -514,6 +500,45 @@ function getVideoCategory(video) {
         .toLowerCase();
 }
 
+function renderShortsPlaceholders(container) {
+    if (!container || container.children.length > 0) {
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="shorts-placeholder-list" aria-label="Sample Shorts preview frames">
+            <div class="shorts-placeholder-card" aria-label="Sample Shorts placeholder 1">
+                <span class="shorts-placeholder-play" aria-hidden="true">▶</span>
+                <div class="shorts-placeholder-caption">
+                    <strong>Shorts preview</strong>
+                    <span>Sample frame</span>
+                </div>
+            </div>
+            <div class="shorts-placeholder-card" aria-label="Sample Shorts placeholder 2">
+                <span class="shorts-placeholder-play" aria-hidden="true">▶</span>
+                <div class="shorts-placeholder-caption">
+                    <strong>Shorts preview</strong>
+                    <span>Sample frame</span>
+                </div>
+            </div>
+            <div class="shorts-placeholder-card" aria-label="Sample Shorts placeholder 3">
+                <span class="shorts-placeholder-play" aria-hidden="true">▶</span>
+                <div class="shorts-placeholder-caption">
+                    <strong>Shorts preview</strong>
+                    <span>Sample frame</span>
+                </div>
+            </div>
+            <div class="shorts-placeholder-card" aria-label="Sample Shorts placeholder 4">
+                <span class="shorts-placeholder-play" aria-hidden="true">▶</span>
+                <div class="shorts-placeholder-caption">
+                    <strong>Shorts preview</strong>
+                    <span>Sample frame</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // =====================================================
 // RENDER VIDEOS
 // =====================================================
@@ -533,6 +558,11 @@ function renderVideos() {
     const trendingContainer =
         document.getElementById(
             "trendingVideos"
+        );
+
+    const shortsContainer =
+        document.getElementById(
+            "shortsVideos"
         );
 
     const musicContainer =
@@ -555,6 +585,11 @@ function renderVideos() {
     if (trendingContainer) {
 
         trendingContainer.innerHTML = "";
+    }
+
+    if (shortsContainer) {
+
+        shortsContainer.innerHTML = "";
     }
 
     if (musicContainer) {
@@ -590,6 +625,7 @@ function renderVideos() {
             `;
         }
 
+        renderShortsPlaceholders(shortsContainer);
         return;
     }
 
@@ -615,10 +651,29 @@ function renderVideos() {
             createVideoCard(video);
 
         // =================================================
-        // TRENDING
+        // SHORTS
         // =================================================
 
         if (
+            category === "shorts" ||
+            category.includes("shorts")
+        ) {
+
+            if (shortsContainer) {
+
+                shortsContainer.insertAdjacentHTML(
+                    "beforeend",
+                    card
+                );
+            }
+
+        }
+
+        // =================================================
+        // TRENDING
+        // =================================================
+
+        else if (
             category === "trending" ||
             category.includes("trending")
         ) {
@@ -714,6 +769,8 @@ function renderVideos() {
         }
 
     });
+
+    renderShortsPlaceholders(shortsContainer);
 
     attachVideoEvents();
 
@@ -874,13 +931,9 @@ async function toggleLike(
     likeButton
 ) {
 
-    let likedVideoIds =
-        getLikedVideoIds();
-
-    const isCurrentlyLiked =
-        likedVideoIds.includes(
-            String(videoId)
-        );
+    const video = getVideoById(videoId);
+    const videoIdString = String(videoId);
+    const isCurrentlyLiked = likedVideoIds.includes(videoIdString);
 
     try {
 
@@ -906,13 +959,15 @@ async function toggleLike(
         }
 
         if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                window.location.replace("/login");
+                throw new Error("Your session has expired. Please sign in again.");
+            }
 
             throw new Error(
                 `Like API failed: ${response.status}`
             );
         }
-
-        // Update local storage
 
         if (isCurrentlyLiked) {
 
@@ -932,9 +987,7 @@ async function toggleLike(
 
         } else {
 
-            likedVideoIds.push(
-                String(videoId)
-            );
+            likedVideoIds.push(videoIdString);
 
             likeButton.classList.add(
                 "liked"
@@ -944,14 +997,7 @@ async function toggleLike(
                 "♥ Liked";
         }
 
-        saveLikedVideoIds(
-            likedVideoIds
-        );
-
         updateLikedVideosCount();
-
-        const video =
-            getVideoById(videoId);
 
         if (video) {
 
@@ -972,9 +1018,10 @@ async function toggleLike(
             error
         );
 
-        alert(
-            "Unable to update like. Please try again."
-        );
+        if (error.message.includes("session has expired")) {
+            return;
+        }
+        alert(error.message || "Unable to update like. Please try again.");
     }
 }
 
@@ -1021,6 +1068,10 @@ async function searchVideos() {
             await fetch(url);
 
         if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                window.location.replace("/login");
+                return;
+            }
 
             throw new Error(
                 `Search failed: ${response.status}`
@@ -1044,8 +1095,7 @@ async function searchVideos() {
 
         videos = data;
 
-        const likedVideoIds =
-            getLikedVideoIds();
+        await loadLikedVideoIdsFromAPI();
 
         videos.forEach((video) => {
 
@@ -1172,6 +1222,7 @@ function showOnlySection(sectionId) {
     const sections = [
 
         "recommended-section",
+        "shorts-section",
         "trending-section",
         "music-section",
         "movies"
@@ -1246,6 +1297,21 @@ function setupSidebarNavigation() {
 
                     showOnlySection(
                         "recommended-section"
+                    );
+
+                    return;
+                }
+
+                // SHORTS
+
+                if (
+                    text.includes("shorts")
+                ) {
+
+                    event.preventDefault();
+
+                    showOnlySection(
+                        "shorts-section"
                     );
 
                     return;
@@ -1567,7 +1633,7 @@ function logout() {
     );
 
     window.location.href =
-        "/login";
+        "/logout";
 }
 
 // =====================================================
@@ -1743,10 +1809,7 @@ function setupProfileMenu() {
             "profileMenu"
         );
 
-    if (
-        !profileButton ||
-        !profileMenu
-    ) {
+    if (!profileButton || !profileMenu) {
 
         return;
     }
@@ -1754,24 +1817,18 @@ function setupProfileMenu() {
     profileButton.addEventListener(
         "click",
         function (event) {
-
             event.stopPropagation();
-
-            profileMenu.classList.toggle(
-                "show"
-            );
+            profileMenu.classList.toggle("show");
         }
     );
 
-    document.addEventListener(
-        "click",
-        function () {
+    profileMenu.addEventListener("click", function (event) {
+        event.stopPropagation();
+    });
 
-            profileMenu.classList.remove(
-                "show"
-            );
-        }
-    );
+    document.addEventListener("click", function () {
+        profileMenu.classList.remove("show");
+    });
 }
 
 setupProfileMenu();
@@ -2012,7 +2069,9 @@ document.addEventListener(
             return;
         }
 
-        if (requestedSection === "trending") {
+        if (requestedSection === "shorts") {
+            showOnlySection("shorts-section");
+        } else if (requestedSection === "trending") {
             showOnlySection("trending-section");
         } else if (requestedSection === "music") {
             showOnlySection("music-section");

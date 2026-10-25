@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Raunak Dummy YouTube</title>
+    <link rel="stylesheet" href="profile.css">
+    <link rel="icon" type="image/svg+xml" href="/youtube-icon.svg">
+</head>
+
+<body>
+    <header class="profile-topbar">
+        <a class="brand" href="/">▶ Raunak Dummy YouTube</a>
+        <nav aria-label="Profile navigation">
+            <a class="back-home-button" href="/">← Back</a>
+            <a href="/settings">Settings</a>
+            <button id="signOutButton" type="button">Sign out</button>
+        </nav>
+    </header>
+
+    <main class="profile-page">
+        <section class="profile-card" aria-labelledby="profileTitle">
+            <div class="profile-avatar">
+                <span id="profileAvatarFallback" aria-hidden="true">👤</span>
+                <img id="profileAvatarImage" alt="Profile picture" hidden>
+            </div>
+            <h1 id="profileTitle">Profile</h1>
+            <h2 id="profileName">Raunak Rej</h2>
+            <p id="profileHandle" class="profile-handle">@raunakrej</p>
+
+            <div class="profile-email">
+                <span aria-hidden="true">📧</span>
+                <div>
+                    <span class="field-label">Email</span>
+                    <span id="profileEmail">Email not provided</span>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <a class="profile-stat" href="/channel">
+                    <span>📺 Subscriptions</span><strong id="subscriptionsCount">0</strong>
+                </a>
+                <a class="profile-stat" href="/likedvideos">
+                    <span>👍 Liked Videos</span><strong id="likedCount">0</strong>
+                </a>
+                <a class="profile-stat" href="/watchlater">
+                    <span>⏱ Watch Later</span><strong id="watchLaterCount">0</strong>
+                </a>
+                <a class="profile-stat" href="/history">
+                    <span>📜 History</span><strong id="historyCount">0</strong>
+                </a>
+            </div>
+            <p id="profileStatsMessage" class="profile-stats-message" role="status" aria-live="polite"></p>
+
+            <button id="editProfileButton" class="edit-profile-button" type="button">Edit Profile</button>
+            <p id="profileSaveMessage" class="profile-save-message" role="status" aria-live="polite"></p>
+
+            <dialog id="editProfileModal" class="edit-profile-modal" aria-labelledby="editProfileTitle">
+                <div class="edit-profile-modal-header">
+                    <h2 id="editProfileTitle">Edit Profile</h2>
+                    <button id="closeEditProfileButton" class="close-edit-profile-button"
+                        type="button" aria-label="Close edit profile">×</button>
+                </div>
+                <form id="editProfileForm" class="edit-profile-form">
+                    <div class="edit-picture-control">
+                        <div class="edit-profile-avatar">
+                            <span id="editProfileAvatarFallback" aria-hidden="true">👤</span>
+                            <img id="editProfileAvatarImage" alt="Profile picture preview" hidden>
+                        </div>
+                        <div class="edit-picture-picker">
+                            <span class="edit-picture-title">Profile picture</span>
+                            <button id="chooseProfilePictureButton" class="choose-picture-button"
+                                type="button">Choose a new picture</button>
+                            <input id="profilePictureInput" name="profilePicture" type="file"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                aria-label="Choose a profile picture file" hidden>
+                            <span class="input-help">JPEG, PNG, GIF, or WebP; maximum 5 MB.</span>
+                        </div>
+                    </div>
+                    <label for="editUsername">Username</label>
+                    <input id="editUsername" name="username" type="text" required maxlength="80">
+                    <label for="editEmail">Email (saved to your account)</label>
+                    <input id="editEmail" name="email" type="email" required maxlength="254">
+                    <label for="currentPassword">Current password (to confirm changes)</label>
+                    <input id="currentPassword" name="currentPassword" type="password"
+                        autocomplete="current-password" required>
+                    <label class="password-change-toggle" for="changePasswordToggle">
+                        <input id="changePasswordToggle" type="checkbox" aria-controls="passwordChangeFields">
+                        Change password
+                    </label>
+                    <div id="passwordChangeFields" hidden>
+                        <label for="newPassword">New password</label>
+                        <input id="newPassword" name="newPassword" type="password"
+                            autocomplete="new-password" minlength="8" maxlength="72">
+                        <span class="input-help">Use at least 8 characters.</span>
+                        <label for="confirmNewPassword">Confirm new password</label>
+                        <input id="confirmNewPassword" name="confirmNewPassword" type="password"
+                            autocomplete="new-password" minlength="8" maxlength="72">
+                    </div>
+                    <div class="edit-actions">
+                        <button type="submit">Save</button>
+                        <button id="cancelEditButton" type="button" class="secondary-button">Cancel</button>
+                    </div>
+                    <p id="profileMessage" role="status" aria-live="polite"></p>
+                </form>
+            </dialog>
+        </section>
+    </main>
+
+    <div id="profileSuccessPopup" class="profile-success-popup" role="status"
+        aria-live="polite" aria-atomic="true" hidden></div>
+
+    <script src="profile.js?v=20261004-password-toggle-fields"></script>
+</body>
+
+</html>

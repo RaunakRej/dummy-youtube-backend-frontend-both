@@ -114,11 +114,36 @@ input:focus {
     font-weight: 700;
 }
 
+.forgot-password-link {
+    margin: 10px 0 0;
+    text-align: right;
+    font-size: 14px;
+}
+
+.forgot-password-link a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.forgot-password-link a:hover {
+    text-decoration: underline;
+}
+
 .message {
     min-height: 20px;
     margin: 14px 0 0;
     color: var(--error);
     font-size: 14px;
+}
+
+.success-message {
+    color: #188038;
+}
+
+.signup-help {
+    margin: 7px 0 0;
+    color: var(--secondary-text);
+    font-size: 13px;
 }
 
 .login-button {
@@ -154,8 +179,101 @@ input:focus {
     font-weight: 700;
 }
 
+.back-home-link {
+    margin-top: 14px;
+}
+
+.login-popup[hidden] {
+    display: none;
+}
+
+.login-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.48);
+}
+
+.login-popup-card {
+    width: min(100%, 380px);
+    padding: 28px;
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.login-popup-card h2 {
+    margin: 0 0 12px;
+    font-size: 21px;
+}
+
+.login-popup-card p {
+    margin: 0 0 22px;
+    color: var(--secondary-text);
+    line-height: 1.5;
+}
+
+.login-popup-card button {
+    min-width: 120px;
+    height: 42px;
+    border: 0;
+    border-radius: 22px;
+    color: #fff;
+    background: var(--primary);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.login-popup-card button:hover {
+    background: var(--primary-hover);
+}
+
+.login-popup-card form {
+    text-align: left;
+}
+
+.login-popup-card form label {
+    display: block;
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.login-popup-card form input {
+    width: 100%;
+}
+
+.forgot-password-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.forgot-password-actions button {
+    flex: 1;
+    padding: 0 12px;
+}
+
+.login-popup-card .secondary-popup-button {
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: var(--surface);
+}
+
+.login-popup-card .secondary-popup-button:hover {
+    background: #f2f2f2;
+}
+
 @media (max-width: 480px) {
     .login-card {
         padding: 28px 22px;
+    }
+
+    .login-popup-card {
+        padding: 24px;
     }
 }
